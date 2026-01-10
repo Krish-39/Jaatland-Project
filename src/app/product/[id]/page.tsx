@@ -134,11 +134,13 @@ function currency(n: number) {
 export default function ProductPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [cart, setCart] = useState<{ id: string; size: string; qty: number }[]>([]);
+  const [cart, setCart] = useState<{ id: string; size?: string; qty: number }[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
+  const [user, setUser] = useState<{email: string} | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const product = PRODUCTS.find((p: Product) => p.id === id);
 
@@ -146,6 +148,7 @@ export default function ProductPage() {
     if (typeof window !== "undefined") {
       const savedCart = localStorage.getItem("jaatland_cart");
       const savedWL = localStorage.getItem("jaatland_wishlist");
+      const savedUser = localStorage.getItem("jaatland_user");
       if (savedCart) {
         try {
           setCart(JSON.parse(savedCart));
@@ -160,28 +163,46 @@ export default function ProductPage() {
           console.error("Error parsing wishlist:", e);
         }
       }
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          console.error("Error parsing user:", e);
+        }
+      }
+      setIsLoaded(true);
     }
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && isLoaded) {
       try {
         localStorage.setItem("jaatland_cart", JSON.stringify(cart));
       } catch (e) {
         console.error("Error saving cart:", e);
       }
     }
-  }, [cart]);
+  }, [cart, isLoaded]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && isLoaded) {
       try {
         localStorage.setItem("jaatland_wishlist", JSON.stringify(wishlist));
       } catch (e) {
         console.error("Error saving wishlist:", e);
       }
     }
-  }, [wishlist]);
+  }, [wishlist, isLoaded]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && isLoaded) {
+      try {
+        localStorage.setItem("jaatland_user", JSON.stringify(user));
+      } catch (e) {
+        console.error("Error saving user:", e);
+      }
+    }
+  }, [user, isLoaded]);
 
   if (!product) {
     return (
@@ -307,7 +328,7 @@ export default function ProductPage() {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Size</h3>
+              <h3 className="font-semibold mb-2">Size <span className="text-red-500">*</span></h3>
               <select
                 value={selectedSize}
                 onChange={(e) => setSelectedSize(e.target.value)}

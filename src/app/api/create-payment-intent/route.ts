@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-10-29.clover',
-});
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+
+const stripe = stripeKey ? new Stripe(stripeKey) : null;
 
 export async function POST(request: NextRequest) {
   try {
+    if (!stripe) {
+      console.error('Stripe is not configured - no key found');
+      return NextResponse.json(
+        { error: 'Stripe is not configured' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.text();
     if (!body) {
       return NextResponse.json(
@@ -27,16 +35,17 @@ export async function POST(request: NextRequest) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
       currency: 'eur',
-      payment_method_types: ['card', 'klarna', 'sepa_debit'],
+      payment_method_types: ['card'],
     });
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
     });
   } catch (error) {
-    console.error('Error creating payment intent:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error creating payment intent:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to create payment intent' },
+      { error: 'Failed to create payment intent: ' + errorMessage },
       { status: 500 }
     );
   }

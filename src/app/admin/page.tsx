@@ -119,7 +119,6 @@ export default function AdminPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [activeTab, setActiveTab] = useState("products");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -129,7 +128,6 @@ export default function AdminPage() {
         router.push("/");
         return;
       }
-      setIsLoggedIn(true);
 
       const stored = localStorage.getItem("jaatland_products");
       if (stored) {

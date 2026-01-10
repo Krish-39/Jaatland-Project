@@ -12,16 +12,16 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
 // Initialize Stripe
-const stripePromise = loadStripe("pk_test_51S2XmpRowOCkn0yW6eRFRhtiPIjWaef5O4nUzmD6UmVvKNhji21WYpJfVPmRJylApvfHm0izwc6ewouSJfuQKsgy00CBtgakG9");
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 function currency(n: number) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR" }).format(n);
 }
 
 // ---- Mock Data (same as home page) ----
-const CATEGORIES = ["Men", "Women", "Unisex", "Accessories"] as const;
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;
-const COLORS = ["Black", "White", "Blue", "Beige", "Olive", "Maroon"] as const;
+type CATEGORIES_TYPE = ["Men", "Women", "Unisex", "Accessories"];
+type SIZES_TYPE = ["XS", "S", "M", "L", "XL", "XXL"];
+type COLORS_TYPE = ["Black", "White", "Blue", "Beige", "Olive", "Maroon"];
 
 type Product = {
   id: string;
@@ -63,12 +63,11 @@ const DEFAULT_PRODUCTS: Product[] = [
 // Products will be loaded from localStorage on client side
 
 // Checkout Form Component
-function CheckoutForm({ cart, total, onSuccess, products, user }: { cart: { id: string; qty: number }[], total: number, onSuccess: () => void, products: Product[], user: {email: string} | null }) {
+function CheckoutForm({ cart, total, onSuccess, products, user }: { cart: { id: string; size?: string; qty: number }[], total: number, onSuccess: () => void, products: Product[], user: {email: string} | null }) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<string>("");
-  const [clientSecret, setClientSecret] = useState<string>("");
   const [shippingInfo, setShippingInfo] = useState({
     name: "",
     email: "",
@@ -331,10 +330,11 @@ function CheckoutForm({ cart, total, onSuccess, products, user }: { cart: { id: 
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const [cart, setCart] = useState<{ id: string; qty: number }[]>([]);
+  const [cart, setCart] = useState<{ id: string; size?: string; qty: number }[]>([]);
   const [user, setUser] = useState<{email: string} | null>(null);
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
   const [clientSecret, setClientSecret] = useState<string>("");
+  const [paymentError, setPaymentError] = useState<string>("");
 
   useEffect(() => {
     // Load cart, user, and products
@@ -385,9 +385,19 @@ export default function CheckoutPage() {
             body: JSON.stringify({ amount: total }),
           });
           const data = await response.json();
-          setClientSecret(data.clientSecret);
+          if (data.error) {
+            console.error('Payment intent error:', data.error);
+            setPaymentError(data.error);
+            return;
+          }
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret);
+            setPaymentError("");
+          }
         } catch (error) {
-          console.error('Error creating payment intent:', error);
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          console.error('Error creating payment intent:', errorMsg);
+          setPaymentError(errorMsg);
         }
       }
     };
@@ -443,7 +453,7 @@ export default function CheckoutPage() {
                 {cart.map((item) => {
                   const product = products.find((p) => p.id === item.id)!;
                   return (
-                    <div key={item.id} className="flex items-center gap-4">
+                    <div key={`${item.id}-${item.size || 'default'}`} className="flex items-center gap-4">
                       <img
                         src={product.images[0]}
                         alt={product.name}
@@ -452,6 +462,7 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <div className="font-medium">{product.name}</div>
                         <div className="text-sm text-gray-600">
+                          {item.size && <span>Size: {item.size} • </span>}
                           Quantity: {item.qty} × {currency(product.price)}
                         </div>
                       </div>
@@ -470,17 +481,32 @@ export default function CheckoutPage() {
 
           {/* Payment Form */}
           <div>
-            {clientSecret ? (
+            {paymentError && (
+              <Card className="mb-4 border-red-300 bg-red-50">
+                <CardContent className="p-4">
+                  <p className="text-red-800 text-sm">{paymentError}</p>
+                </CardContent>
+              </Card>
+            )}
+            {total === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-gray-600">Add items to your cart to proceed with payment</p>
+                </CardContent>
+              </Card>
+            ) : clientSecret ? (
               <Elements stripe={stripePromise} options={{ clientSecret }}>
                 <CheckoutForm cart={cart} total={total} onSuccess={handlePaymentSuccess} products={products} user={user} />
               </Elements>
             ) : (
-              <div className="flex items-center justify-center p-8">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                  <p>Loading payment form...</p>
-                </div>
-              </div>
+              <Card>
+                <CardContent className="p-8 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                    <p>Initializing payment form...</p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>

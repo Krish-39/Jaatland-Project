@@ -32,9 +32,6 @@ import {
   SortDesc,
   User,
   LogOut,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
   Package,
 } from "lucide-react";
 
@@ -90,7 +87,7 @@ export default function Jaatland() {
   const [category, setCategory] = useState<string | null>(null);
   const [sizeFilters, setSizeFilters] = useState<string[]>([]);
   const [colorFilters, setColorFilters] = useState<string[]>([]);
-  const [cart, setCart] = useState<{ id: string; qty: number }[]>([]);
+  const [cart, setCart] = useState<{ id: string; size?: string; qty: number }[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]); // NEW
   const [sort, setSort] = useState<"featured" | "priceAsc" | "priceDesc" | "nameAsc">("featured"); // NEW
   const [user, setUser] = useState<{email: string} | null>(null); // NEW: user auth
@@ -101,6 +98,7 @@ export default function Jaatland() {
   const [loginError, setLoginError] = useState("");
   const [isCreateAccount, setIsCreateAccount] = useState(false);
 
+  const [isLoaded, setIsLoaded] = useState(false);
   const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
   const [homepageConfig, setHomepageConfig] = useState({
     heroTitle: "Jaatland-Land of Premium Wear.",
@@ -140,8 +138,8 @@ export default function Jaatland() {
     }
   }, []);
 
-  const minPrice = useMemo(() => Math.floor(Math.min(...products.map((p: Product) => p.price))), []);
-  const maxPrice = useMemo(() => Math.ceil(Math.max(...products.map((p: Product) => p.price))), []);
+  const minPrice = useMemo(() => Math.floor(Math.min(...products.map((p: Product) => p.price))), [products]);
+  const maxPrice = useMemo(() => Math.ceil(Math.max(...products.map((p: Product) => p.price))), [products]);
   const [priceRange, setPriceRange] = useState<[number, number]>([minPrice, maxPrice]); // NEW
 
   // ---- Load persisted state (NEW) ----
@@ -180,40 +178,47 @@ export default function Jaatland() {
           console.error("Error parsing user:", e);
         }
       }
+      setIsLoaded(true);
     } catch {}
   }, []);
 
   // ---- Persist state (NEW) ----
   useEffect(() => {
+    if (!isLoaded) return;
     try {
       localStorage.setItem(LS.CART, JSON.stringify(cart));
     } catch (e) {
       console.error("Error saving cart:", e);
     }
-  }, [cart]);
+  }, [cart, isLoaded]);
   useEffect(() => {
+    if (!isLoaded) return;
     try {
       localStorage.setItem(LS.WISHLIST, JSON.stringify(wishlist));
     } catch (e) {
       console.error("Error saving wishlist:", e);
     }
-  }, [wishlist]);
+  }, [wishlist, isLoaded]);
   useEffect(() => {
+    if (!isLoaded) return;
     try { localStorage.setItem(LS.THEME, dark ? "dark" : "light"); } catch {}
-  }, [dark]);
+  }, [dark, isLoaded]);
   useEffect(() => {
+    if (!isLoaded) return;
     try { localStorage.setItem(LS.PRICE, JSON.stringify(priceRange)); } catch {}
-  }, [priceRange]);
+  }, [priceRange, isLoaded]);
   useEffect(() => {
+    if (!isLoaded) return;
     try { localStorage.setItem(LS.SORT, sort); } catch {}
-  }, [sort]);
+  }, [sort, isLoaded]);
   useEffect(() => {
+    if (!isLoaded) return;
     try {
       localStorage.setItem("jaatland_user", JSON.stringify(user));
     } catch (e) {
       console.error("Error saving user:", e);
     }
-  }, [user]);
+  }, [user, isLoaded]);
 
   const filtered = useMemo(() => {
     let list = products.slice();
@@ -250,17 +255,23 @@ export default function Jaatland() {
   );
 
   const addToCart = (id: string) => {
+    const product = products.find((p: Product) => p.id === id);
+    if (!product) return;
+    
+    // Use the first available size as default
+    const defaultSize = product.size && product.size.length > 0 ? product.size[0] : undefined;
+    
     setCart((prev) => {
-      const found = prev.find((i) => i.id === id);
-      if (found) return prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i));
-      return [...prev, { id, qty: 1 }];
+      const found = prev.find((i) => i.id === id && (!i.size || i.size === defaultSize));
+      if (found) return prev.map((i) => (i.id === id && (!i.size || i.size === defaultSize) ? { ...i, qty: i.qty + 1 } : i));
+      return [...prev, { id, size: defaultSize, qty: 1 }];
     });
   };
 
-  const updateQty = (id: string, delta: number) => {
+  const updateQty = (id: string, delta: number, size?: string) => {
     setCart((prev) =>
       prev
-        .map((i) => (i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i))
+        .map((i) => (i.id === id && (!size || i.size === size) ? { ...i, qty: Math.max(0, i.qty + delta) } : i))
         .filter((i) => i.qty > 0)
     );
   };
@@ -555,16 +566,19 @@ export default function Jaatland() {
                     {cart.map((item) => {
                       const p = products.find((x: Product) => x.id === item.id)!;
                       return (
-                        <div key={item.id} className="flex items-center gap-3 rounded-xl border p-3">
+                        <div key={`${item.id}-${item.size || 'default'}`} className="flex items-center gap-3 rounded-xl border p-3">
                           <img src={getImageUrl(p)} alt={p.name} className="h-16 w-16 rounded-lg object-cover" />
                           <div className="flex-1">
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-sm opacity-70">{currency(p.price)} each</div>
+                            <div className="text-sm opacity-70">
+                              {currency(p.price)} each
+                              {item.size && <span className="ml-2">• Size: {item.size}</span>}
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button size="icon" variant="outline" onClick={() => updateQty(item.id, -1)}>-</Button>
+                            <Button size="icon" variant="outline" onClick={() => updateQty(item.id, -1, item.size)}>-</Button>
                             <span className="w-6 text-center">{item.qty}</span>
-                            <Button size="icon" onClick={() => updateQty(item.id, 1)}>+</Button>
+                            <Button size="icon" onClick={() => updateQty(item.id, 1, item.size)}>+</Button>
                           </div>
                         </div>
                       );
@@ -840,7 +854,7 @@ export default function Jaatland() {
           {category === "Men" && (
             <>
               <div className="mb-6">
-                <h2 className="text-3xl font-bold">Men's Collection</h2>
+                <h2 className="text-3xl font-bold">Men&apos;s Collection</h2>
                 <p className="text-sm opacity-70 mt-1">Premium wear for the modern man</p>
               </div>
               <div className="mb-4 flex items-center justify-between">
@@ -904,7 +918,7 @@ export default function Jaatland() {
           {category === "Women" && (
             <>
               <div className="mb-6">
-                <h2 className="text-3xl font-bold">Women's Collection</h2>
+                <h2 className="text-3xl font-bold">Women&apos;s Collection</h2>
                 <p className="text-sm opacity-70 mt-1">Stylish pieces for every occasion</p>
               </div>
               <div className="mb-4 flex items-center justify-between">

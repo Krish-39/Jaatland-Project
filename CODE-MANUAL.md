@@ -303,10 +303,3 @@ npm install
 | `jaatland_products` | Product catalog |
 | `jaatland_theme` | Theme preference |
 
----
-
-**Document Information:**
-- Repository: https://github.com/Krish-39/jaatland-web
-- Branch: main
-- Last Updated: December 2024
-

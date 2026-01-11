@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard, Lock } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { CATEGORIES, COLORS } from "@/lib/types";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -19,10 +20,6 @@ function currency(n: number) {
 }
 
 // ---- Mock Data (same as home page) ----
-type CATEGORIES_TYPE = ["Men", "Women", "Unisex", "Accessories"];
-type SIZES_TYPE = ["XS", "S", "M", "L", "XL", "XXL"];
-type COLORS_TYPE = ["Black", "White", "Blue", "Beige", "Olive", "Maroon"];
-
 type Product = {
   id: string;
   name: string;
@@ -134,7 +131,6 @@ function CheckoutForm({ cart, total, onSuccess, products, user }: { cart: { id: 
       // Confirm payment with PaymentElement
       const { error } = await stripe.confirmPayment({
         elements,
-        clientSecret,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/success`,
           receipt_email: shippingInfo.email,

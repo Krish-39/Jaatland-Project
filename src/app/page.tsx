@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -173,9 +174,10 @@ export default function Jaatland() {
         if (Array.isArray(parsed) && parsed.length === 2) setPriceRange([+parsed[0], +parsed[1]]);
       }
       if (savedSort === "priceAsc" || savedSort === "priceDesc" || savedSort === "nameAsc") setSort(savedSort);
-      if (savedUser) {
+      if (savedUser && savedUser !== "null") {
         try {
-          setUser(JSON.parse(savedUser));
+          const parsed = JSON.parse(savedUser);
+          if (parsed?.email) setUser(parsed);
         } catch (e) {
           console.error("Error parsing user:", e);
         }
@@ -183,6 +185,23 @@ export default function Jaatland() {
       setIsLoaded(true);
     } catch {}
   }, []);
+
+  // Keep the price range in sync with the catalog. priceRange is initialized
+  // from the default catalog, so without this, products added later (e.g. via
+  // admin) whose price falls outside the original bounds are filtered out
+  // silently. Untouched ranges follow the new bounds; user-selected ranges
+  // are clamped into them.
+  const priceBoundsRef = useRef<[number, number]>([minPrice, maxPrice]);
+  useEffect(() => {
+    const [prevLo, prevHi] = priceBoundsRef.current;
+    priceBoundsRef.current = [minPrice, maxPrice];
+    setPriceRange(([lo, hi]) => {
+      if (lo === prevLo && hi === prevHi) return [minPrice, maxPrice];
+      const nextLo = Math.min(Math.max(lo, minPrice), maxPrice);
+      const nextHi = Math.min(Math.max(hi, minPrice), maxPrice);
+      return nextLo === lo && nextHi === hi ? [lo, hi] : [nextLo, nextHi];
+    });
+  }, [minPrice, maxPrice]);
 
   // Persist state
   useEffect(() => {
@@ -228,7 +247,12 @@ export default function Jaatland() {
   useEffect(() => {
     if (!isLoaded) return;
     try {
-      localStorage.setItem(LS.USER, JSON.stringify(user));
+      if (user) {
+        localStorage.setItem(LS.USER, JSON.stringify(user));
+      } else {
+        // avoid persisting the string "null", which older code treated as JSON
+        localStorage.removeItem(LS.USER);
+      }
     } catch (e) {
       console.error("Error saving user:", e);
     }
@@ -578,12 +602,12 @@ export default function Jaatland() {
                     )}
                     {wishlistProducts.map((p) => (
                       <div key={p.id} className="flex items-center gap-3 rounded-xl border p-3">
-                        <Image
+                        <ProductImage
                           src={getImageUrl(p)}
                           alt={p.name}
                           width={64}
                           height={64}
-                          className="h-16 w-16 rounded-lg object-cover"
+                          className="h-16 w-16 rounded-lg"
                         />
                         <div className="flex-1">
                           <div className="font-medium">{p.name}</div>
@@ -630,12 +654,12 @@ export default function Jaatland() {
                       if (!p) return null;
                       return (
                         <div key={`${item.id}-${item.size || "default"}`} className="flex items-center gap-3 rounded-xl border p-3">
-                          <Image
+                          <ProductImage
                             src={getImageUrl(p)}
                             alt={p.name}
                             width={64}
                             height={64}
-                            className="h-16 w-16 rounded-lg object-cover"
+                            className="h-16 w-16 rounded-lg"
                           />
                           <div className="flex-1">
                             <div className="font-medium">{p.name}</div>

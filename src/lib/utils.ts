@@ -13,7 +13,7 @@ export function formatCurrency(amount: number): string {
 }
 
 export function getImageUrl(product: { images?: string[] | null }): string {
-  return product.images?.[0] || '';
+  return product.images?.find((img) => !!img) || '';
 }
 
 export function generateId(prefix: string = 'p'): string {

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { ProductImage } from '@/components/product-image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,12 +32,11 @@ export function ProductCard({
       <Card className="overflow-hidden cursor-pointer h-full flex flex-col">
         <CardHeader className="p-0">
           <div className="relative h-56 w-full">
-            <Image
+            <ProductImage
               src={getImageUrl(product)}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover"
             />
             <div className="absolute left-3 top-3 flex flex-col gap-1">
               {product.badge && <Badge variant="secondary">{product.badge}</Badge>}

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,10 +53,10 @@ export default function CheckoutPage() {
     }
 
     const savedUser = localStorage.getItem(LS.USER);
-    if (savedUser) {
+    if (savedUser && savedUser !== "null") {
       try {
         const user = JSON.parse(savedUser);
-        setForm((prev) => ({ ...prev, email: user.email }));
+        if (user?.email) setForm((prev) => ({ ...prev, email: user.email }));
       } catch (e) {
         console.error("Error parsing user:", e);
       }
@@ -306,12 +306,12 @@ export default function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div key={`${item.id}-${item.size || "default"}`} className="flex gap-4">
                     <div className="relative">
-                      <Image
-                        src={item.product ? getImageUrl(item.product) : ''}
+                      <ProductImage
+                        src={item.product ? getImageUrl(item.product) : ""}
                         alt={item.product?.name || "Product"}
                         width={64}
                         height={64}
-                        className="h-16 w-16 rounded-lg object-cover"
+                        className="h-16 w-16 rounded-lg"
                       />
                       <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-500 text-xs text-white">
                         {item.qty}

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,9 +40,10 @@ export default function OrdersPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedUser = localStorage.getItem(LS.USER);
-      if (savedUser) {
+      if (savedUser && savedUser !== "null") {
         try {
-          setUser(JSON.parse(savedUser));
+          const parsed = JSON.parse(savedUser);
+          if (parsed?.email) setUser(parsed);
         } catch (e) {
           console.error("Error parsing user:", e);
         }
@@ -158,12 +159,12 @@ export default function OrdersPage() {
                         const product = getProduct(item.id);
                         return (
                           <div key={`${item.id}-${item.size || idx}`} className="flex items-center gap-3">
-                            <Image
-                              src={product ? getImageUrl(product) : ''}
+                            <ProductImage
+                              src={product ? getImageUrl(product) : ""}
                               alt={product?.name || "Product"}
                               width={48}
                               height={48}
-                              className="h-12 w-12 rounded-lg object-cover"
+                              className="h-12 w-12 rounded-lg"
                             />
                             <div className="flex-1">
                               <div className="font-medium">{product?.name}</div>

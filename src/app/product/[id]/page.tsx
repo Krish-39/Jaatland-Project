@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Image from "next/image";
+import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -162,17 +162,12 @@ export default function ProductDetailPage() {
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="space-y-4">
             <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100 dark:bg-slate-800">
-              {images[activeImageIndex] ? (
-                <Image
-                  src={images[activeImageIndex]}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-96 items-center justify-center text-gray-400">No image</div>
-              )}
+              <ProductImage
+                src={images[activeImageIndex]}
+                alt={product.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
             </div>
 
             {images.length > 1 && (
@@ -185,12 +180,11 @@ export default function ProductDetailPage() {
                       activeImageIndex === idx ? "border-primary" : "border-transparent"
                     }`}
                   >
-                    <Image
+                    <ProductImage
                       src={img}
                       alt={`${product.name} ${idx + 1}`}
                       fill
                       sizes="80px"
-                      className="object-cover"
                     />
                   </button>
                 ))}
@@ -289,12 +283,11 @@ export default function ProductDetailPage() {
                   onClick={() => router.push(`/product/${p.id}`)}
                 >
                   <div className="relative h-48 overflow-hidden rounded-lg bg-gray-100 dark:bg-slate-800">
-                    <Image
+                    <ProductImage
                       src={getImageUrl(p)}
                       alt={p.name}
                       fill
                       sizes="(max-width: 640px) 50vw, 25vw"
-                      className="object-cover"
                     />
                     {p.badge && <Badge className="absolute left-2 top-2">{p.badge}</Badge>}
                   </div>

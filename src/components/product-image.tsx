@@ -13,6 +13,7 @@ interface ProductImageProps {
   fill?: boolean;
   width?: number;
   height?: number;
+  priority?: boolean;
 }
 
 // Renders a Shirt-icon placeholder when the product has no image URL,
@@ -25,6 +26,7 @@ export function ProductImage({
   fill,
   width,
   height,
+  priority = false,
 }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
 
@@ -52,6 +54,8 @@ export function ProductImage({
       width={fill ? undefined : width}
       height={fill ? undefined : height}
       sizes={fill ? sizes : undefined}
+      priority={priority}
+      loading={priority ? "eager" : undefined}
       className={cn("object-cover", className)}
       onError={() => setFailed(true)}
     />

@@ -98,7 +98,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
 export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
   heroTitle: 'Jaatland-Land of Premium Wear.',
   heroSubtitle:
-    'Premium basics and statement pieces engineered for comfort, quality, and everyday flex. Ethically made. Limited batches. Ships World wide.',
+    'Premium basics and statement pieces engineered for comfort, quality, and everyday flex. Ethically made. Limited batches. Ships worldwide.',
   heroImage:
     'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop',
   newsletterTitle: 'Join the Jaatland club',
@@ -120,9 +120,12 @@ export const LS_KEYS = {
   PRICE: 'jaatland_price',
   SORT: 'jaatland_sort',
   USER: 'jaatland_user',
+  /** Email used at the last guest checkout, so guests can see their orders. */
+  BUYER_EMAIL: 'jaatland_buyer_email',
   ORDERS: 'jaatland_orders',
   PRODUCTS: 'jaatland_products',
   HOMEPAGE: 'jaatland_homepage',
+  NEWSLETTER: 'jaatland_newsletter_email',
   ADMIN_EMAIL: 'jaatland_admin_email',
   USER_EMAIL: 'jaatland_user_email',
   USER_PASSWORD: 'jaatland_user_password',

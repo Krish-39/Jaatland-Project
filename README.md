@@ -1,118 +1,263 @@
 # Jaatland
 
-A demo storefront for **Jaatland Clothing Co.** — a full e-commerce front end (browse, filter, cart, wishlist, checkout, orders, admin) built with Next.js and shadcn/ui. Everything runs client-side against `localStorage`, so there is no database or backend.
+A storefront demo for **Jaatland Clothing Co.** It is a complete, client-side e-commerce front end: browse a catalog, search and filter it, fill a cart and wishlist, check out, read back your orders, and edit products and homepage copy from an admin panel.
 
-## Getting started
+There is no backend and no database. The catalog, cart, wishlist, orders, signed-in user, theme, and homepage copy all live in the browser's `localStorage`. That is what makes it a one-command demo, and it is also why none of it is production-grade. See [Demo security](#demo-security).
+
+## Quick start
+
+Node 20.9 or newer is required (Next.js 16's minimum).
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open <http://localhost:3000>.
 
-## Scripts
+### Demo accounts
 
-| Script                | What it does                             |
-| --------------------- | ---------------------------------------- |
-| `npm run dev`         | Development server (Turbopack)           |
-| `npm run build`       | Production build                         |
-| `npm run start`       | Serve the production build               |
-| `npm run lint`        | ESLint (flat config, Next 16 rules)      |
-| `npm run typecheck`   | TypeScript, no emit                      |
-| `npm run test`        | Vitest watch mode                        |
-| `npm run test:run`    | Vitest single run                        |
-| `npm run test:coverage` | Vitest with coverage report            |
+Login is a `localStorage` check, not authentication, so treat these as sample values.
 
-## Demo accounts
+| Role | Email | Password | What it unlocks |
+| --- | --- | --- | --- |
+| Admin | `krishahir@jaatland.com` | `1234` | Skips straight to `/admin`: dashboard stats, product CRUD, homepage editor |
+| Customer | any email you enter in the login dialog | your choice, 6+ characters | Cart, wishlist, and `/orders` scoped to that email |
 
-Auth is stored in `localStorage` only — it is a demo, not real security. Passwords sit in plain text in the browser and ship in the client bundle. Do not reuse a real password.
+Registration keeps a single account per browser (one `jaatland_user_email` key), stored in plain text.
 
-- **Admin** — `krishahir@jaatland.com` / `1234`. Logs into `/admin` for product and homepage editing plus store stats.
-- **Customer** — create one from the login dialog, or log in as an existing local account.
+## What you can do
+
+**Shopping**
+
+- Browse four categories (Men, Women, Unisex, Accessories) with a featured row plus one section per category.
+- Search by name, filter by category, size, colour, and price range, and sort four ways. Any active filter swaps the homepage grid for a single results view.
+- Add to cart from a card or the product page. Lines split by size, so the same shirt in M and L are separate entries.
+- Watch the cart's free-shipping bar fill toward **€40**, with a toast confirming each change.
+
+**Product detail**
+
+- Image gallery, size picker, price, badge, and related products drawn from each product's `similarIds`.
+
+**Checkout and orders**
+
+- Shipping form, card form with live input formatting, and an order summary.
+- Payment is simulated: the card is never charged and never stored.
+- Order history is scoped to the signed-in email, or to the email used at the last guest checkout on that browser.
+
+**Admin** (`/admin`)
+
+- Dashboard: total products, total orders, revenue, wishlist items, and recent orders, all read from local data.
+- Products: create, edit, and delete catalog entries, including images, sizes, badge, and related products.
+- Homepage: edit the hero title, subtitle, and image, the newsletter copy, and which products appear in each category row.
+
+**Everywhere**
+
+- Dark mode applied before first paint, so there is no flash of the wrong theme.
+- Responsive layout. On mobile the header collapses into a sheet carrying search, filters, and sort.
+- Loading skeletons, keyboard-accessible controls, and ARIA labels on the interactive pieces.
 
 ## How it works
 
-There is no server. Products, cart, wishlist, orders, the homepage layout, and the signed-in user all live in `localStorage` under the `jaatland_` prefix (`src/lib/mock-data.ts` holds the seed catalog and key names). The catalog you see is seeded from `DEFAULT_PRODUCTS` the first time you load.
+### No server, one store
 
-Checkout is deliberately simulated. The payment form is never charged, and card details are not stored or transmitted anywhere — shipping records keep only name, email, and address.
+Every page is a client component reading from a single `StoreProvider` (`src/components/store-provider.tsx`). The provider renders the seeded defaults on the server, hydrates from `localStorage` once on mount, then writes cart, wishlist, and user back on every change. Pages never prop-drill state to each other; they call `useStore()`.
 
-All shared state lives in one client-side `StoreProvider` (`src/components/store-provider.tsx`), so the header, homepage grid, product page, checkout, orders, and admin all read and write the same catalog, cart, wishlist, and user. The homepage's search/filter/sort state is shared with the header through `src/hooks/use-product-filters.ts`.
+```
+                    ┌────────────────────────────────┐
+                    │   StoreProvider (client)       │
+                    │   products · homepage config   │
+                    │   cart · wishlist · user       │
+                    │   toasts                       │
+                    └───────────────┬────────────────┘
+                                    │ useStore()
+        ┌───────────┬───────────────┼──────────────┬────────────┐
+        ▼           ▼               ▼              ▼            ▼
+    store-header  homepage     product detail  checkout     admin
+    (nav+filters)   grid                        orders       panel
+                                    │
+                                    ▼
+                     localStorage  (keys prefixed jaatland_)
+```
 
-### Stripe test configuration
+### Order snapshots
 
-The `/api/create-payment-intent` endpoint creates real EUR card payment intents when configured with a Stripe test secret in `.env.local`:
+`createOrder()` (`src/lib/orders.ts`) copies the name, price, and image onto every line at purchase time. Editing or deleting a product later cannot rewrite history, so an order always shows what was actually bought and at what price. Orders saved by older builds, which stored only an id and quantity, resolve against the live catalog as a fallback via `resolveOrderItem`.
+
+### Order history scoping
+
+There are no accounts to look up, so `/orders` filters stored orders by the signed-in email or, for guests, by the email recorded at the last checkout on that browser. `orderBelongsTo` does a case-insensitive match against either the order email or the shipping email, which also covers legacy orders that only stored the latter.
+
+### Guarded storage
+
+Every read and write goes through `src/lib/storage.ts`. One corrupt `localStorage` entry used to throw during render and take the whole page down, so `readJson`, `readArray`, and friends swallow parse errors and return a fallback. Writes return `false` instead of throwing when storage is full or disabled, and the store surfaces that as a toast.
+
+### Filters shared across the header and the grid
+
+`useProductFilters` (`src/hooks/use-product-filters.ts`) owns query, category, size, colour, sort, and price range, so the header's controls and the homepage grid stay in sync without a dozen setters passed down. Sort and price range persist across reloads. The price range also stores the bounds it was chosen against, so a range the user narrowed stays put when the catalog changes while an untouched one follows the new bounds.
+
+### Theme without a flash
+
+`src/app/layout.tsx` inlines a small script in `<head>` that adds the `dark` class before first paint if `jaatland_theme` is `dark`. React re-applies it afterward, with `suppressHydrationWarning` on `<html>` to cover the class the script already set.
+
+## Reference
+
+### Scripts
+
+| Script | Command | Notes |
+| --- | --- | --- |
+| `npm run dev` | `next dev --turbopack` | Dev server on port 3000 |
+| `npm run build` | `next build` | Production build |
+| `npm run start` | `next start` | Serve the production build |
+| `npm run lint` | `eslint .` | Flat config, Next 16 rules |
+| `npm run typecheck` | `tsc --noEmit` | Types only, no emit |
+| `npm run test` | `vitest` | Watch mode |
+| `npm run test:run` | `vitest run` | Single run, the one to use in CI |
+| `npm run test:coverage` | `vitest run --coverage` | V8 coverage |
+| `npm run test:ui` | `vitest --ui` | Needs `@vitest/ui` installed: `npm i -D @vitest/ui` |
+
+### Routes
+
+| Route | File | Purpose |
+| --- | --- | --- |
+| `/` | `src/app/page.tsx` | Hero, featured row, per-category sections, newsletter |
+| `/product/[id]` | `src/app/product/[id]/page.tsx` | Product detail; `layout.tsx` sets per-product metadata |
+| `/checkout` | `src/app/checkout/page.tsx` | Shipping, simulated payment, confirmation |
+| `/orders` | `src/app/orders/page.tsx` | Order history for the current viewer |
+| `/admin` | `src/app/admin/page.tsx` | Dashboard, products, homepage editor |
+| `POST /api/create-payment-intent` | `src/app/api/create-payment-intent/route.ts` | Stripe PaymentIntent (not called by the UI) |
+| (boundaries) | `src/app/error.tsx`, `src/app/not-found.tsx` | Error and 404 screens |
+
+### Browser storage keys
+
+All keys are prefixed `jaatland_` and declared in `LS_KEYS` (`src/lib/mock-data.ts`).
+
+| Key | Holds |
+| --- | --- |
+| `jaatland_products` | Admin-edited catalog (JSON array of `Product`) |
+| `jaatland_homepage` | Admin-edited hero, newsletter copy, per-category product ids |
+| `jaatland_cart` | Cart lines: `{ id, size, qty }` |
+| `jaatland_wishlist` | Product ids |
+| `jaatland_orders` | Order records |
+| `jaatland_buyer_email` | Email from the last guest checkout |
+| `jaatland_user` | Signed-in `{ email }` |
+| `jaatland_user_email`, `jaatland_user_password` | Registered demo account (plain text) |
+| `jaatland_admin_email` | Admin email used at login |
+| `jaatland_theme` | `"dark"` when set; anything else is light |
+| `jaatland_sort` | Persisted sort option |
+| `jaatland_price` | Persisted `{ range, bounds }` for the price slider |
+| `jaatland_newsletter_email` | Newsletter signup email |
+
+### Catalog constants
+
+`src/lib/mock-data.ts` seeds `DEFAULT_PRODUCTS` (6 items) and defines the filter vocabulary:
+
+- **Categories:** Men, Women, Unisex, Accessories
+- **Sizes:** XS, S, M, L, XL, XXL (plus `One` for accessories, in the `ProductSize` type)
+- **Colours:** Black, White, Blue, Beige, Olive, Maroon
+
+### Payment endpoint
+
+`POST /api/create-payment-intent` returns a Stripe client secret. It exists so payments can be wired up later; the storefront never calls it, which is why checkout works without a key.
 
 ```env
+# .env.local
 STRIPE_SECRET_KEY=sk_test_your_key_here
 ```
 
-The storefront does not call this endpoint yet — checkout is a client-side simulation. Use a test key for development, and never commit `.env.local` or a real secret key.
+Request body:
 
-## Features
+```json
+{ "items": [ { "id": "p1", "qty": 2 } ] }
+```
 
-- **Browse** — four categories (Men, Women, Unisex, Accessories) with featured and per-category sections
-- **Search, filter, sort** — live text search plus size/color/price-range filters and four sort orders; active filters switch the grid to a single results view
-- **Cart & wishlist** — side sheets with quantity controls, a free-shipping progress bar, and toast feedback, persisted across pages and reloads
-- **Product detail** — image gallery, size picker, and related products
-- **Checkout & orders** — simulated payment, then an order history scoped to the signed-in user or to the email used for the last guest checkout on that browser
-- **Admin** — product CRUD, homepage copy/hero editing, and store stats read from real local data
-- **Dark mode** — persisted preference, applied before first paint to avoid a flash
-- **Responsive** — mobile menu sheet with search, filters, and sort
-- **Polish** — loading skeletons, non-blocking toast confirmations, formatted card inputs, and keyboard/ARIA labels throughout
+| Behaviour | Detail |
+| --- | --- |
+| Pricing | Recomputed server-side from `DEFAULT_PRODUCTS`; an amount supplied by the client is ignored |
+| Limits | 1 to 50 lines; each `qty` an integer from 1 to 99; unknown product ids rejected |
+| Currency | EUR, card only |
+| Responses | `200 { clientSecret }`, `400` bad body or unknown product, `503` no key configured, `500` provider error (details logged server-side only) |
 
-## Stack
-
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui on Radix primitives · Lucide icons · Framer Motion · Stripe (optional, endpoint only).
-
-## Project layout
+### Project layout
 
 ```
 src/
-  app/            Routes: /, /product/[id], /checkout, /orders, /admin, error + not-found boundaries
+  app/                 Routes, error/not-found boundaries, the payment route
   components/
-    ui/           shadcn/ui primitives (button, card, sheet, dialog, …)
-    store-provider.tsx  Global products/cart/wishlist/user/toast state (useStore)
-    store-header.tsx    Sticky header, cart + wishlist sheets, mobile menu, filters
-    hero.tsx            Homepage hero (admin-editable copy + image)
-    store-footer.tsx    Newsletter + footer links
-    product-card.tsx
-    product-image.tsx  Image with placeholder + broken-URL fallback
+    ui/                shadcn/ui primitives (button, card, sheet, dialog, slider, ...)
+    store-provider.tsx Global state and toasts (useStore)
+    store-header.tsx   Sticky nav, search, filter/sort menus, cart + wishlist sheets
+    store-footer.tsx   Newsletter signup, links, social icons
+    hero.tsx           Homepage hero (admin-editable copy and image)
+    login-dialog.tsx   Login and register dialog
+    product-card.tsx   Grid card
+    product-image.tsx  next/image with a placeholder and broken-URL fallback
     product-grid-skeleton.tsx  Loading skeletons for the grid and product page
   hooks/
-    use-product-filters.ts  Shared search/filter/sort/price state
+    use-product-filters.ts  Shared search, filter, sort, and price state
   lib/
-    mock-data.ts  Seed catalog, categories, sizes, colors, localStorage keys, admin creds
-    orders.ts     Order snapshots, totals, and buyer matching (pure helpers)
-    storage.ts    Guarded localStorage reads/writes (corrupt entries never crash a page)
+    mock-data.ts  Seed catalog, constants, storage keys, admin credentials
+    orders.ts     Order snapshots, totals, buyer matching (pure, tested)
+    storage.ts    Guarded localStorage reads and writes (tested)
     types.ts      Shared types
-    utils.ts      cn(), currency, image, id helpers
+    utils.ts      cn(), EUR formatting, image and id helpers (tested)
+public/               Brand favicon plus unused Next.js SVG placeholders
 ```
 
-## Demo security
+## Common tasks
 
-This build has no backend. Authentication, the admin gate, and order history live in
-`localStorage`, and `ADMIN_PASSWORD` in `src/lib/mock-data.ts` is baked into the client
-bundle. Treat all of it as demo-only:
+### Reset the demo to a clean state
 
-- Do not reuse a real password, and do not ship these credentials to production.
-- Anyone can edit `localStorage` to unlock `/admin` or change an order; client-side checks
-  are not authorization.
-- Password hashing, server sessions, and a real database are required before this can
-  handle real accounts. See “Notes for a real deployment”.
+Clear the app's keys, then reload. In the browser console:
 
-## Notes for a real deployment
+```js
+Object.keys(localStorage)
+  .filter((key) => key.startsWith("jaatland_"))
+  .forEach((key) => localStorage.removeItem(key));
+```
 
-This is a portfolio/demo build. Before it could take real orders it needs a database, server-side auth, wiring the checkout UI to the payment endpoint, and server-rendered product pages. Review authentication, order persistence, and payment handling before any production use.
+The catalog, cart, orders, theme, and admin edits all return to their seeded defaults on the next load. DevTools > Application > Local Storage > delete the same keys works too.
 
-The payment endpoint prices `{ items: [{ id, qty }] }` from the server catalog rather than
-accepting an amount from the client, but the storefront does not call it yet. The checkout
-flow is still simulated and stores no card data.
+### Add a product
 
-## Tests
+Go to `/admin`, log in, open the **Products** tab, and choose **Add Product**. The form covers name, price (EUR), category, colour, sizes, image URLs, an optional badge, and related products. Saving writes the whole catalog to `jaatland_products`, so the change is per-browser and survives reloads.
+
+### Change the homepage copy
+
+Go to `/admin` > **Homepage**. The hero title, subtitle, and image come from here, as do the newsletter title and subtitle and the product selection for each category row. Clearing a hero field leaves the section empty rather than reverting to the default.
+
+## Testing
+
+25 unit tests across three files. They cover pure logic rather than rendered components:
 
 ```bash
-npm run test:run    # Vitest unit tests for order snapshots, storage guards, formatting
+npm run test:run      # orders (12), storage (10), utils (3)
 npm run typecheck
 npm run lint
 ```
+
+`storage.test.ts` runs under jsdom, declared inline with `// @vitest-environment jsdom`, because it exercises `window.localStorage`. The rest run in the default node environment. Component behaviour is checked by hand in the browser, not by tests.
+
+## Known gaps
+
+- **Two seed products fall outside the colour filter.** `COLORS` lists Black, White, Blue, Beige, Olive, and Maroon, but the seed catalog includes a Gray hoodie (`p4`) and a Red tote (`p6`). Both render fine, but no colour filter can select them.
+- **Product metadata reads only the seed catalog.** `src/app/product/[id]/layout.tsx` builds its title and description from `DEFAULT_PRODUCTS`, so a product added through the admin panel shows `"Product not found | Jaatland"` as its tab title.
+- **Stripe client packages are installed but unused.** `@stripe/react-stripe-js` and `@stripe/stripe-js` sit in `package.json` and nothing imports them; only the server SDK is used, by the payment route.
+- **`npm run test:ui` needs `@vitest/ui`.** It is not in `devDependencies`, so the script fails until you install it.
+- **Unused starter assets.** `public/` still carries `file.svg`, `globe.svg`, `next.svg`, `vercel.svg`, and `window.svg` from the Next.js starter. Nothing imports them.
+- **Product images are hotlinked.** `next.config.ts` allowlists seven external hosts (Unsplash, Zalando, iStock, Shutterstock, and three Google image hosts). If any URL rots, the card falls back to a placeholder.
+
+## Demo security
+
+Auth, the admin gate, and order history are all `localStorage` reads, and `ADMIN_PASSWORD` is compiled into the client bundle. That means:
+
+- Anyone can open DevTools, set `jaatland_user` to `{"email":"krishahir@jaatland.com"}`, and reach `/admin`.
+- Anyone can edit `jaatland_orders` to rewrite or fabricate an order.
+- Passwords are stored in plain text and shipped to every visitor.
+- Client-side checks are not authorization. There is no server to enforce anything.
+
+Use throwaway credentials, and never put real data in this build.
+
+## Notes for a real deployment
+
+Before this can take real orders it needs a database, server-side sessions and authorization, product pages rendered from that database rather than a bundled seed, and the checkout UI wired to the payment endpoint. The payment route already prices the order from a server-side catalog instead of trusting the client for an amount, but checkout still charges nothing and stores no card data.

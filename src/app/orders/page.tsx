@@ -5,100 +5,83 @@ import { useRouter } from "next/navigation";
 import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Package, MapPin, CreditCard } from "lucide-react";
-import { DEFAULT_PRODUCTS, LS_KEYS } from "@/lib/mock-data";
-import { formatCurrency, getImageUrl } from "@/lib/utils";
-import { Product } from "@/lib/types";
+import { LS_KEYS } from "@/lib/mock-data";
+import { formatCurrency } from "@/lib/utils";
+import { orderBelongsTo, resolveOrderItem } from "@/lib/orders";
+import { readJson } from "@/lib/storage";
+import { useStore } from "@/components/store-provider";
+import type { Order } from "@/lib/types";
 
 const LS = LS_KEYS;
 
-interface Order {
-  id: string;
-  date: string;
-  email?: string;
-  items: { id: string; size?: string; qty: number }[];
-  total: number;
-  status: "pending" | "processing" | "shipped" | "completed" | "cancelled";
-  shipping: {
-    name: string;
-    email?: string;
-    address: string;
-    city: string;
-    zip: string;
-    country: string;
-  };
+function statusClasses(status: Order["status"]) {
+  switch (String(status).toLowerCase()) {
+    case "pending":
+      return "bg-amber-500 text-white";
+    case "processing":
+      return "bg-blue-600 text-white";
+    case "shipped":
+      return "bg-purple-600 text-white";
+    case "completed":
+      return "bg-green-600 text-white";
+    case "cancelled":
+      return "bg-red-600 text-white";
+    default:
+      return "bg-slate-500 text-white";
+  }
 }
 
 export default function OrdersPage() {
   const router = useRouter();
+  const { products, user, isLoaded } = useStore();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [ordersLoaded, setOrdersLoaded] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedUser = localStorage.getItem(LS.USER);
-      if (savedUser && savedUser !== "null") {
-        try {
-          const parsed = JSON.parse(savedUser);
-          if (parsed?.email) setUser(parsed);
-        } catch (e) {
-          console.error("Error parsing user:", e);
-        }
-      }
-
-      const storedOrders = localStorage.getItem(LS.ORDERS);
-      if (storedOrders) {
-        try {
-          setOrders(JSON.parse(storedOrders));
-        } catch (e) {
-          console.error("Error parsing orders:", e);
-        }
-      }
-
-      const storedProducts = localStorage.getItem(LS.PRODUCTS);
-      if (storedProducts) {
-        try {
-          setProducts(JSON.parse(storedProducts));
-        } catch (e) {
-          console.error("Error parsing products:", e);
-        }
-      }
-    }
+    const storedOrders = readJson<Order[]>(LS.ORDERS, []);
+    setOrders(Array.isArray(storedOrders) ? storedOrders : []);
+    setBuyerEmail(readJson<string>(LS.BUYER_EMAIL, ""));
+    setOrdersLoaded(true);
   }, []);
 
-  const getProduct = (id: string) => products.find((p) => p.id === id);
-
-  const userOrders = user
-    ? orders.filter((o) => o.email === user.email || o.shipping?.email === user.email)
+  // Logged-in users see their account's orders; guests see the orders placed
+  // with the email used at the last checkout on this browser.
+  const viewerEmail = user?.email || buyerEmail || "";
+  const userOrders = viewerEmail
+    ? orders.filter((order) => orderBelongsTo(order, viewerEmail))
     : [];
 
-  const getStatusColor = (status: Order["status"]) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-500";
-      case "processing":
-        return "bg-blue-500";
-      case "shipped":
-        return "bg-purple-500";
-      case "completed":
-        return "bg-green-500";
-      case "cancelled":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
+  if (!isLoaded || !ordersLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex flex-col items-center gap-3"
+        >
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900 dark:border-slate-700 dark:border-t-white" />
+          <span className="text-sm opacity-70">Loading your orders…</span>
+        </div>
+      </div>
+    );
+  }
 
-  if (!user) {
+  if (!viewerEmail) {
     return (
       <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold">Please Login</h1>
+          <h1 className="mb-4 text-2xl font-bold">No Orders Yet</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
-            You need to login to view your orders.
+            Place an order or log in to see your order history.
           </p>
           <Button onClick={() => router.push("/")}>Go to Home</Button>
         </div>
@@ -124,25 +107,41 @@ export default function OrdersPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <Button variant="ghost" onClick={() => router.push("/")} className="mb-6 gap-2">
+        <Button
+          variant="ghost"
+          onClick={() => router.push("/")}
+          className="mb-6 gap-2"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back to Store
         </Button>
 
-        <h1 className="mb-8 text-3xl font-bold">My Orders</h1>
+        <h1 className="mb-2 text-3xl font-bold">My Orders</h1>
+        <p className="mb-8 text-sm text-gray-500">
+          {user
+            ? `Signed in as ${viewerEmail}`
+            : `Showing orders placed on this browser as ${viewerEmail}`}
+        </p>
 
         <div className="space-y-6">
           {userOrders.map((order) => (
             <Card key={order.id}>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                  <CardTitle className="text-lg">Order #{order.id}</CardTitle>
+                  <CardTitle className="text-lg">
+                    Order #{order.id}
+                  </CardTitle>
                   <div className="flex items-center gap-4">
-                    <Badge className={getStatusColor(order.status)}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    <Badge className={statusClasses(order.status)}>
+                      {order.status.charAt(0).toUpperCase() +
+                        order.status.slice(1)}
                     </Badge>
                     <span className="text-sm text-gray-500">
-                      {new Date(order.date).toLocaleDateString()}
+                      {new Date(order.date).toLocaleDateString("en-IE", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </span>
                   </div>
                 </div>
@@ -155,26 +154,32 @@ export default function OrdersPage() {
                       Items
                     </h3>
                     <div className="space-y-2">
-                      {order.items.map((item, idx) => {
-                        const product = getProduct(item.id);
+                      {order.items.map((item, index) => {
+                        const { name, image, unitPrice } = resolveOrderItem(
+                          item,
+                          products
+                        );
                         return (
-                          <div key={`${item.id}-${item.size || idx}`} className="flex items-center gap-3">
+                          <div
+                            key={`${item.id}-${item.size || index}`}
+                            className="flex items-center gap-3"
+                          >
                             <ProductImage
-                              src={product ? getImageUrl(product) : ""}
-                              alt={product?.name || "Product"}
+                              src={image}
+                              alt={name}
                               width={48}
                               height={48}
                               className="h-12 w-12 rounded-lg"
                             />
                             <div className="flex-1">
-                              <div className="font-medium">{product?.name}</div>
+                              <div className="font-medium">{name}</div>
                               <div className="text-sm text-gray-500">
                                 Qty: {item.qty}
                                 {item.size && ` • Size: ${item.size}`}
                               </div>
                             </div>
                             <div className="font-medium">
-                              {formatCurrency((product?.price || 0) * item.qty)}
+                              {formatCurrency(unitPrice * item.qty)}
                             </div>
                           </div>
                         );
@@ -229,4 +234,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-

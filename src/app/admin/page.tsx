@@ -11,8 +11,6 @@ import { ArrowLeft, Plus, Edit, Trash2, BarChart3, Home, Package } from "lucide-
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  DEFAULT_PRODUCTS,
-  DEFAULT_HOMEPAGE_CONFIG,
   CATEGORIES,
   SIZES,
   COLORS,
@@ -21,41 +19,29 @@ import {
 } from "@/lib/mock-data";
 import { formatCurrency, generateId } from "@/lib/utils";
 import { HomepageConfig, Product, ProductCategory, ProductSize } from "@/lib/types";
+import { readArray, readString, removeStored } from "@/lib/storage";
+import { useStore } from "@/components/store-provider";
 
 const LS = LS_KEYS;
 
 export default function AdminPage() {
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
+  const { products, saveProducts, isLoaded } = useStore();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [activeTab, setActiveTab] = useState("products");
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const adminEmail = localStorage.getItem(LS.ADMIN_EMAIL);
+      const adminEmail = readString(LS.ADMIN_EMAIL);
       if (adminEmail !== ADMIN_EMAIL) {
         router.push("/");
         return;
       }
-
-      const stored = localStorage.getItem(LS.PRODUCTS);
-      if (stored) {
-        try {
-          setProducts(JSON.parse(stored));
-        } catch (e) {
-          console.error("Error parsing stored products:", e);
-        }
-      }
+      setIsAuthorized(true);
     }
   }, [router]);
-
-  const saveProducts = (newProducts: Product[]) => {
-    setProducts(newProducts);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(LS.PRODUCTS, JSON.stringify(newProducts));
-    }
-  };
 
   const handleAddProduct = () => {
     setIsAdding(true);
@@ -78,18 +64,16 @@ export default function AdminPage() {
 
   const handleDeleteProduct = (id: string) => {
     if (confirm("Are you sure you want to delete this product?")) {
-      const newProducts = products.filter((p) => p.id !== id);
-      saveProducts(newProducts);
+      saveProducts(products.filter((product) => product.id !== id));
     }
   };
 
   const handleSaveProduct = (product: Product) => {
-    let newProducts;
-    if (isAdding) {
-      newProducts = [...products, product];
-    } else {
-      newProducts = products.map((p) => (p.id === product.id ? product : p));
-    }
+    const newProducts = isAdding
+      ? [...products, product]
+      : products.map((existing) =>
+          existing.id === product.id ? product : existing
+        );
     saveProducts(newProducts);
     setEditingProduct(null);
     setIsAdding(false);
@@ -99,6 +83,16 @@ export default function AdminPage() {
     setEditingProduct(null);
     setIsAdding(false);
   };
+
+  if (!isAuthorized || !isLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+        <div role="status" aria-live="polite" className="text-sm opacity-70">
+          Checking admin access…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
@@ -113,7 +107,7 @@ export default function AdminPage() {
           <Button
             variant="outline"
             onClick={() => {
-              localStorage.removeItem(LS.ADMIN_EMAIL);
+              removeStored(LS.ADMIN_EMAIL);
               router.push("/");
             }}
             className="gap-2"
@@ -240,20 +234,8 @@ function DashboardTab({ products }: { products: Product[] }) {
   const [wishlistCount, setWishlistCount] = useState(0);
 
   useEffect(() => {
-    try {
-      const storedOrders = localStorage.getItem(LS.ORDERS);
-      if (storedOrders) {
-        const parsed = JSON.parse(storedOrders);
-        if (Array.isArray(parsed)) setOrders(parsed);
-      }
-      const storedWishlist = localStorage.getItem(LS.WISHLIST);
-      if (storedWishlist) {
-        const parsed = JSON.parse(storedWishlist);
-        if (Array.isArray(parsed)) setWishlistCount(parsed.length);
-      }
-    } catch (e) {
-      console.error("Error loading dashboard data:", e);
-    }
+    setOrders(readArray(LS.ORDERS));
+    setWishlistCount(readArray<string>(LS.WISHLIST).length);
   }, []);
 
   const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
@@ -330,41 +312,22 @@ function DashboardTab({ products }: { products: Product[] }) {
 }
 
 function HomepageTab() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const {
+    products,
+    homepageConfig: storedConfig,
+    saveHomepageConfig,
+    notify,
+  } = useStore();
   const [homepageConfig, setHomepageConfig] =
-    useState<HomepageConfig>(DEFAULT_HOMEPAGE_CONFIG);
+    useState<HomepageConfig>(storedConfig);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(LS.PRODUCTS);
-      if (stored) {
-        try {
-          setProducts(JSON.parse(stored));
-        } catch (e) {
-          console.error("Error parsing stored products:", e);
-        }
-      }
-      const storedHomepage = localStorage.getItem(LS.HOMEPAGE);
-      if (storedHomepage) {
-        try {
-          const parsed = JSON.parse(storedHomepage);
-          setHomepageConfig((prev) => ({
-            ...prev,
-            ...parsed,
-            homepageProducts: parsed.homepageProducts || prev.homepageProducts,
-          }));
-        } catch (e) {
-          console.error("Error parsing homepage config:", e);
-        }
-      }
-    }
-  }, []);
+    setHomepageConfig(storedConfig);
+  }, [storedConfig]);
 
   const handleSave = () => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(LS.HOMEPAGE, JSON.stringify(homepageConfig));
-      alert("Homepage settings saved!");
-    }
+    saveHomepageConfig(homepageConfig);
+    notify("Homepage settings saved");
   };
 
   const toggleProductInCategory = (category: string, productId: string) => {

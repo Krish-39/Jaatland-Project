@@ -1,14 +1,20 @@
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { ProductImage } from '@/components/product-image';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency, getImageUrl } from '@/lib/utils';
-import { Product } from '@/lib/types';
-import { Heart, ShoppingCart } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { ProductImage } from "@/components/product-image";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { formatCurrency, getImageUrl } from "@/lib/utils";
+import { Product } from "@/lib/types";
+import { Heart, ShoppingCart } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -27,63 +33,91 @@ export function ProductCard({
   onAddToCart,
   onToggleWishlist,
 }: ProductCardProps) {
+  const productUrl = `/product/${product.id}`;
+
   return (
-    <Link href={`/product/${product.id}`}>
-      <Card className="overflow-hidden cursor-pointer h-full flex flex-col">
-        <CardHeader className="p-0">
-          <div className="relative h-56 w-full">
+    <Card className="group h-full gap-0 overflow-hidden p-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+      <CardHeader className="relative p-0">
+        <Link
+          href={productUrl}
+          className="block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          aria-label={`View ${product.name}`}
+        >
+          <div className="relative h-56 w-full bg-slate-100 dark:bg-slate-800">
             <ProductImage
               src={getImageUrl(product)}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="transition-transform duration-500 group-hover:scale-[1.03]"
             />
-            <div className="absolute left-3 top-3 flex flex-col gap-1">
-              {product.badge && <Badge variant="secondary">{product.badge}</Badge>}
-              {isInCart && <Badge variant="default">In Cart ({cartQty})</Badge>}
-            </div>
-            <button
-              aria-label="Toggle wishlist"
-              onClick={(e) => {
-                e.preventDefault();
-                onToggleWishlist(product.id);
-              }}
-              className={`absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow hover:bg-white transition-colors ${
-                isInWishlist ? 'text-red-600' : 'text-slate-700'
-              }`}
-            >
-              <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-current' : ''}`} />
-            </button>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-1 p-4 flex-1">
-          <CardTitle className="text-base">{product.name}</CardTitle>
-          <div className="text-sm opacity-70">
-            {product.category} • {product.color}
-          </div>
-          <div className="text-lg font-semibold">{formatCurrency(product.price)}</div>
-        </CardContent>
-        <CardFooter className="flex items-center justify-between p-4 pt-0">
-          <div className="text-xs opacity-70">
-            Sizes: {product.size.join(', ')}
-          </div>
-          <Button
-            onClick={(e) => {
-              e.preventDefault();
-              onAddToCart(product.id);
-            }}
-            size="sm"
-          >
-            <ShoppingCart className="h-4 w-4 mr-1" />
-            {isInCart ? 'Add More' : 'Add to cart'}
-          </Button>
-        </CardFooter>
-      </Card>
-    </Link>
+        </Link>
+
+        <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1">
+          {product.badge && <Badge variant="secondary">{product.badge}</Badge>}
+          {isInCart && (
+            <Badge variant="default">
+              In Cart ({cartQty})
+            </Badge>
+          )}
+        </div>
+
+        <button
+          type="button"
+          aria-label={
+            isInWishlist
+              ? `Remove ${product.name} from wishlist`
+              : `Add ${product.name} to wishlist`
+          }
+          aria-pressed={isInWishlist}
+          onClick={() => onToggleWishlist(product.id)}
+          className={`absolute right-3 top-3 rounded-full bg-white/90 p-2 text-slate-700 shadow transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+            isInWishlist ? "text-red-600 dark:text-red-400" : ""
+          }`}
+        >
+          <Heart
+            className={`h-5 w-5 ${isInWishlist ? "fill-current" : ""}`}
+          />
+        </button>
+      </CardHeader>
+
+      <CardContent className="flex-1 space-y-1 p-4">
+        <Link
+          href={productUrl}
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <CardTitle className="line-clamp-1 text-base">
+            {product.name}
+          </CardTitle>
+        </Link>
+        <div className="text-sm text-slate-500 dark:text-slate-400">
+          {product.category} · {product.color}
+        </div>
+        <div className="pt-1 text-lg font-semibold">
+          {formatCurrency(product.price)}
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex items-center justify-between gap-2 p-4 pt-0">
+        <div className="min-w-0 truncate text-xs text-slate-500 dark:text-slate-400">
+          Sizes: {product.size.join(", ") || "One size"}
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => onAddToCart(product.id)}
+          className="shrink-0"
+          aria-label={`Add ${product.name} to cart`}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          {isInCart ? "Add more" : "Add"}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
 
-// Simple product grid component for category pages
 interface ProductGridProps {
   products: Product[];
   cart: { id: string; size?: string; qty: number }[];
@@ -99,12 +133,15 @@ export function ProductGrid({
   wishlist,
   onAddToCart,
   onToggleWishlist,
-  emptyMessage = 'No products found',
+  emptyMessage = "No products found",
 }: ProductGridProps) {
   if (products.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-600">{emptyMessage}</p>
+      <div className="rounded-2xl border border-dashed px-6 py-16 text-center">
+        <ShoppingCart className="mx-auto mb-3 h-8 w-8 opacity-40" />
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          {emptyMessage}
+        </p>
       </div>
     );
   }
@@ -112,13 +149,15 @@ export function ProductGrid({
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product) => {
-        const cartItem = cart.find((item) => item.id === product.id);
+        const lines = cart.filter((item) => item.id === product.id);
+        const cartQty = lines.reduce((sum, item) => sum + item.qty, 0);
+
         return (
           <ProductCard
             key={product.id}
             product={product}
-            isInCart={!!cartItem}
-            cartQty={cartItem?.qty || 0}
+            isInCart={lines.length > 0}
+            cartQty={cartQty}
             isInWishlist={wishlist.includes(product.id)}
             onAddToCart={onAddToCart}
             onToggleWishlist={onToggleWishlist}
@@ -128,4 +167,3 @@ export function ProductGrid({
     </div>
   );
 }
-

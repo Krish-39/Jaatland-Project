@@ -17,38 +17,35 @@ export interface Product {
 export type ProductCategory = 'Men' | 'Women' | 'Unisex' | 'Accessories';
 export type ProductSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'One';
 
-// Cart types
-export interface CartItem {
-  id: string;
-  size: string;
-  qty: number;
-}
-
-// Wishlist types
-export interface WishlistItem {
-  id: string;
-}
-
-// User types
-export interface User {
-  email: string;
-}
-
-export interface UserCredentials {
-  email: string;
-  password: string;
-}
-
 // Order types
+//
+// Items carry a snapshot of the name/price/image at purchase time. Name and
+// price are optional because orders placed before snapshots existed only stored
+// the product id and quantity.
 export interface OrderItem {
   id: string;
-  name: string;
-  price: number;
+  name?: string;
+  price?: number;
+  size?: string;
   qty: number;
-  image: string;
+  image?: string;
 }
 
-export type OrderStatus = 'Processing' | 'Shipped' | 'Delivered';
+export type OrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'shipped'
+  | 'completed'
+  | 'cancelled';
+
+export interface OrderShipping {
+  name: string;
+  email?: string;
+  address: string;
+  city: string;
+  zip: string;
+  country: string;
+}
 
 export interface Order {
   id: string;
@@ -57,16 +54,7 @@ export interface Order {
   items: OrderItem[];
   total: number;
   status: OrderStatus;
-  shippingInfo: ShippingInfo;
-}
-
-export interface ShippingInfo {
-  name: string;
-  email: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
+  shipping: OrderShipping;
 }
 
 // Homepage configuration types
@@ -83,14 +71,3 @@ export interface HomepageConfig {
     Accessories: string[];
   };
 }
-
-// Filter types
-export interface FilterState {
-  category: string | null;
-  sizeFilters: string[];
-  colorFilters: string[];
-  priceRange: [number, number];
-  sortBy: SortOption;
-}
-
-export type SortOption = 'featured' | 'priceAsc' | 'priceDesc' | 'nameAsc';

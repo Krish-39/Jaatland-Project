@@ -48,10 +48,23 @@ function SheetContent({
   className,
   children,
   side = "right",
+  description,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
+  /**
+   * Screen-reader description for the sheet. Radix warns when a dialog has no
+   * description, so pass one (or rely on the title alone).
+   */
+  description?: string
 }) {
+  // Without a description, drop the default `aria-describedby` so Radix skips
+  // its "Missing Description" warning.
+  const contentProps =
+    description || props["aria-describedby"]
+      ? props
+      : { ...props, "aria-describedby": undefined }
+
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -69,8 +82,11 @@ function SheetContent({
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
           className
         )}
-        {...props}
+        {...contentProps}
       >
+        {description && (
+          <SheetDescription className="sr-only">{description}</SheetDescription>
+        )}
         {children}
         <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
           <XIcon className="size-4" />

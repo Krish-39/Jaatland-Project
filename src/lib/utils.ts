@@ -6,7 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat(undefined, {
+  // Pin the locale: with `undefined` the server (en-US) and the browser (e.g.
+  // de-DE) can format the same price differently, which shows up as a
+  // hydration mismatch and inconsistent copy. en-IE keeps the €24.99 form.
+  return new Intl.NumberFormat('en-IE', {
     style: 'currency',
     currency: 'EUR',
   }).format(amount);

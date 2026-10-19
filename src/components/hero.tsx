@@ -68,7 +68,7 @@ export function Hero({ config }: { config: HomepageConfig }) {
           <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/90 px-4 py-3 shadow-lg backdrop-blur dark:bg-slate-950/85">
             <p className="text-sm font-semibold">New season essentials</p>
             <p className="text-xs opacity-70">
-              Limited batches · Ethically made · Ships worldwide
+              Small-batch drops · Consciously crafted · Delivered worldwide
             </p>
           </div>
         </div>

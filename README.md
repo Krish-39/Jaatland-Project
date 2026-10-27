@@ -1,5 +1,7 @@
 # Jaatland
 
+**Live demo:** <https://store.krriss.cloud>
+
 A storefront demo for **Jaatland Clothing Co.** It is a complete, client-side e-commerce front end: browse a catalog, search and filter it, fill a cart and wishlist, check out, read back your orders, and edit products and homepage copy from an admin panel.
 
 There is no backend and no database. The catalog, cart, wishlist, orders, signed-in user, theme, and homepage copy all live in the browser's `localStorage`. That is what makes it a one-command demo, and it is also why none of it is production-grade. See [Demo security](#demo-security).

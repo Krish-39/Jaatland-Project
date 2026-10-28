@@ -156,11 +156,11 @@ All keys are prefixed `jaatland_` and declared in `LS_KEYS` (`src/lib/mock-data.
 
 - **Categories:** Men, Women, Unisex, Accessories
 - **Sizes:** XS, S, M, L, XL, XXL (plus `One` for accessories, in the `ProductSize` type)
-- **Colours:** Black, White, Blue, Beige, Olive, Maroon
+- **Colours:** Black, White, Gray, Blue, Beige, Olive, Red, Maroon
 
 ### Payment endpoint
 
-`POST /api/create-payment-intent` returns a Stripe client secret. It exists so payments can be wired up later; the storefront never calls it, which is why checkout works without a key.
+`POST /api/create-payment-intent` returns a Stripe client secret. It exists so payments can be wired up later; the storefront never calls it, which is why checkout works without a key. It prices orders from the server-side catalog and allows 10 requests per client per minute (`src/lib/rate-limit.ts`; in-memory, so per server instance).
 
 ```env
 # .env.local
@@ -230,10 +230,10 @@ Go to `/admin` > **Homepage**. The hero title, subtitle, and image come from her
 
 ## Testing
 
-25 unit tests across three files. They cover pure logic rather than rendered components:
+31 unit tests across four files. They cover pure logic rather than rendered components:
 
 ```bash
-npm run test:run      # orders (12), storage (10), utils (3)
+npm run test:run      # orders (12), storage (10), rate-limit (6), utils (3)
 npm run typecheck
 npm run lint
 ```
@@ -242,11 +242,7 @@ npm run lint
 
 ## Known gaps
 
-- **Two seed products fall outside the colour filter.** `COLORS` lists Black, White, Blue, Beige, Olive, and Maroon, but the seed catalog includes a Gray hoodie (`p4`) and a Red tote (`p6`). Both render fine, but no colour filter can select them.
-- **Product metadata reads only the seed catalog.** `src/app/product/[id]/layout.tsx` builds its title and description from `DEFAULT_PRODUCTS`, so a product added through the admin panel shows `"Product not found | Jaatland"` as its tab title.
-- **Stripe client packages are installed but unused.** `@stripe/react-stripe-js` and `@stripe/stripe-js` sit in `package.json` and nothing imports them; only the server SDK is used, by the payment route.
-- **`npm run test:ui` needs `@vitest/ui`.** It is not in `devDependencies`, so the script fails until you install it.
-- **Unused starter assets.** `public/` still carries `file.svg`, `globe.svg`, `next.svg`, `vercel.svg`, and `window.svg` from the Next.js starter. Nothing imports them.
+- **Admin-added products get a generic title until the page loads.** Server metadata only knows the seed catalog, so the first paint says `Product | Jaatland`; the page then sets the real title from the client store.
 - **Product images are hotlinked.** `next.config.ts` allowlists seven external hosts (Unsplash, Zalando, iStock, Shutterstock, and three Google image hosts). If any URL rots, the card falls back to a placeholder.
 
 ## Demo security
@@ -263,3 +259,7 @@ Use throwaway credentials, and never put real data in this build.
 ## Notes for a real deployment
 
 Before this can take real orders it needs a database, server-side sessions and authorization, product pages rendered from that database rather than a bundled seed, and the checkout UI wired to the payment endpoint. The payment route already prices the order from a server-side catalog instead of trusting the client for an amount, but checkout still charges nothing and stores no card data.
+
+## License
+
+[MIT](LICENSE)

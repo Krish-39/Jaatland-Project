@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { DEFAULT_PRODUCTS } from '@/lib/mock-data';
+import { clientKey, createRateLimiter } from '@/lib/rate-limit';
 
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeKey ? new Stripe(stripeKey) : null;
 
 const MAX_LINES = 50;
 const MAX_QUANTITY = 99;
+
+// 10 payment intents per client per minute is plenty for a checkout.
+const limiter = createRateLimiter({ limit: 10, windowMs: 60_000 });
 
 interface RequestedLine {
   id: string;
@@ -41,6 +45,13 @@ function parseLines(value: unknown): RequestedLine[] | null {
 }
 
 export async function POST(request: NextRequest) {
+  if (!limiter.check(clientKey(request.headers))) {
+    return NextResponse.json(
+      { error: 'Too many requests, please try again in a minute' },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
+
   try {
     if (!stripe) {
       console.error('Stripe is not configured - no key found');

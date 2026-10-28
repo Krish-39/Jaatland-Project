@@ -5,7 +5,7 @@ import { HomepageConfig, Product } from '@/lib/types';
 
 export const CATEGORIES = ['Men', 'Women', 'Unisex', 'Accessories'] as const;
 export const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
-export const COLORS = ['Black', 'White', 'Blue', 'Beige', 'Olive', 'Maroon'] as const;
+export const COLORS = ['Black', 'White', 'Gray', 'Blue', 'Beige', 'Olive', 'Red', 'Maroon'] as const;
 
 export const DEFAULT_PRODUCTS: Product[] = [
   {

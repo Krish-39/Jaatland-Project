@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const product = DEFAULT_PRODUCTS.find((p) => p.id === id);
 
   if (!product) {
-    return { title: "Product not found | Jaatland" };
+    return { title: "Product | Jaatland" };
   }
 
   return {

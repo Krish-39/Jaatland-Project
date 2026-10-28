@@ -42,6 +42,14 @@ export default function ProductDetailPage() {
     [products, id]
   );
 
+  // Server metadata only knows the seed catalog; products added in /admin
+  // live in localStorage, so title the tab from the client store as well.
+  useEffect(() => {
+    if (isLoaded && product) {
+      document.title = `${product.name} | Jaatland`;
+    }
+  }, [isLoaded, product]);
+
   const similarProducts = useMemo(() => {
     if (!product) return [];
     return product.similarIds

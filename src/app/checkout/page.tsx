@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProductImage } from "@/components/product-image";
+import { ShowcaseNotice } from "@/components/showcase-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +33,7 @@ function formatExpiry(value: string) {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, products, clearCart, isLoaded, user } = useStore();
+  const { cart, products, clearCart, isLoaded, user, showcase } = useStore();
   const [form, setForm] = useState({
     email: "",
     name: "",
@@ -95,7 +96,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (cart.length === 0) return;
+    if (cart.length === 0 || showcase) return;
 
     setIsProcessing(true);
     setSubmitError("");
@@ -452,11 +453,13 @@ export default function CheckoutPage() {
                 </div>
               </section>
 
+              {showcase && <ShowcaseNotice />}
+
               <Button
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={isProcessing}
+                disabled={isProcessing || showcase}
               >
                 {isProcessing
                   ? "Placing order..."

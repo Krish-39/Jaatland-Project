@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProductImage } from "@/components/product-image";
+import { ShowcaseNotice } from "@/components/showcase-notice";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,7 +43,7 @@ function statusClasses(status: Order["status"]) {
 
 export default function OrdersPage() {
   const router = useRouter();
-  const { products, user, isLoaded } = useStore();
+  const { products, user, isLoaded, showcase } = useStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoaded, setOrdersLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -81,6 +82,18 @@ export default function OrdersPage() {
         >
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900 dark:border-slate-700 dark:border-t-white" />
           <span className="text-sm opacity-70">Loading your orders…</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (showcase) {
+    return (
+      <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+        <div className="mx-auto max-w-md px-4 py-16 text-center">
+          <h1 className="mb-4 text-2xl font-bold">Your orders</h1>
+          <ShowcaseNotice className="mb-6 text-left" />
+          <Button onClick={() => router.push("/")}>Continue shopping</Button>
         </div>
       </div>
     );

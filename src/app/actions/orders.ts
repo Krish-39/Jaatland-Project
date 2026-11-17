@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { isShowcaseMode, SHOWCASE_MESSAGE } from "@/db/url";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getProducts } from "@/lib/data/catalog";
 import {
@@ -20,6 +21,8 @@ export type PlaceOrderResult =
 const orderLimiter = createRateLimiter({ limit: 10, windowMs: 60_000 });
 
 export async function placeOrderAction(input: unknown): Promise<PlaceOrderResult> {
+  if (isShowcaseMode()) return { ok: false, error: SHOWCASE_MESSAGE };
+
   if (!orderLimiter.check(clientKey(await headers()))) {
     return { ok: false, error: "Too many orders in a short time. Please wait a minute." };
   }
@@ -54,6 +57,8 @@ export async function placeOrderAction(input: unknown): Promise<PlaceOrderResult
 /** Orders the caller may see: their account's orders when signed in, plus
  * any guest orders they hold a valid token for. */
 export async function getMyOrdersAction(guestRefs: unknown): Promise<Order[]> {
+  if (isShowcaseMode()) return [];
+
   const refs = guestOrderRefsSchema.safeParse(guestRefs);
   const user = await getCurrentUser();
 

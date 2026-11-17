@@ -18,3 +18,17 @@ export const MISSING_DATABASE_MESSAGE = [
   "then redeploy. That sets DATABASE_URL automatically.",
   "Also set ADMIN_EMAIL and ADMIN_PASSWORD under Settings > Environment Variables.",
 ].join("\n");
+
+/**
+ * True on Vercel when no database is connected. The site then runs as a
+ * read-only showcase: the catalog comes from the built-in seed data and
+ * accounts, admin and checkout are switched off. Connecting a database turns
+ * everything on with no code change. Locally the embedded database is used,
+ * so this is always false outside Vercel. Read on the server only.
+ */
+export function isShowcaseMode(): boolean {
+  return !!process.env.VERCEL && !databaseUrl();
+}
+
+export const SHOWCASE_MESSAGE =
+  "Accounts and checkout are not available in this deployment.";

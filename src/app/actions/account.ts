@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
+import { isShowcaseMode, SHOWCASE_MESSAGE } from "@/db/url";
 import { destroySession, getCurrentUser } from "@/lib/auth/session";
 import { deleteOrdersForUser } from "@/lib/data/orders";
 
@@ -11,6 +12,8 @@ export type AccountResult = { ok: true } | { ok: false; error: string };
 /** Erases the signed-in user's account (GDPR Art. 17). Sessions are removed
  * with the user through the foreign key's ON DELETE CASCADE. */
 export async function deleteAccountAction(): Promise<AccountResult> {
+  if (isShowcaseMode()) return { ok: false, error: SHOWCASE_MESSAGE };
+
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "You are not signed in." };
 

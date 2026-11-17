@@ -106,7 +106,7 @@ Only per-browser convenience state lives in `localStorage` (keys prefixed `jaatl
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Postgres connection string (Neon). Required on Vercel; optional locally |
+| `DATABASE_URL` | Postgres connection string (Neon; `POSTGRES_URL` is accepted too). Without it, Vercel deploys run in showcase mode; locally the embedded database is used |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Admin account, created or updated by `db:migrate` |
 | `STRIPE_SECRET_KEY` | Test-mode key for `POST /api/create-payment-intent` (not yet used by the UI) |
 
@@ -158,6 +158,10 @@ Product and hero photos are local files in `public/products/`, taken from Unspla
 
 ## Deploying to Vercel
 
+The project deploys as-is. **Without a database it runs in showcase mode**: the catalog, cart, wishlist and information pages work from the built-in seed data, while sign-in, admin and checkout show a notice that they are not available. Connecting a database switches every feature on; no code change is needed.
+
+For the full shop:
+
 1. Add a Postgres database to the project (Neon integration; choose an EU region). This sets `DATABASE_URL`.
 2. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` (long and unique) in the project's environment variables.
 3. Fill in `src/lib/legal-config.ts`.
@@ -175,6 +179,7 @@ Unit tests cover order maths, shipping, storage, rate limiting, validation and p
 
 ## Known gaps
 
+- **Showcase mode on Vercel** until a database is connected (see [Deploying to Vercel](#deploying-to-vercel)).
 - **Operator details are empty** until `src/lib/legal-config.ts` is filled in.
 - **Payment is simulated.** Orders are stored with status `pending` and no payment provider is called. Wiring the checkout to Stripe (test mode) with a webhook is the next step.
 - **No order emails.** Confirmation emails need an email provider.

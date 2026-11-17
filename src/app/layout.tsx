@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { DemoBanner } from "@/components/demo-banner";
 import { LegalBar } from "@/components/legal-bar";
 import { StoreProvider } from "@/components/store-provider";
+import { isShowcaseMode } from "@/db/url";
 import { getHomepageConfig, getProducts } from "@/lib/data/catalog";
 import { SITE_URL } from "@/lib/legal-config";
 import "./globals.css";
@@ -55,6 +56,7 @@ export default async function RootLayout({
     getProducts(),
     getHomepageConfig(),
   ]);
+  const showcase = isShowcaseMode();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -70,8 +72,12 @@ export default async function RootLayout({
         >
           Skip to content
         </a>
-        <DemoBanner />
-        <StoreProvider products={products} homepageConfig={homepageConfig}>
+        <DemoBanner showcase={showcase} />
+        <StoreProvider
+          products={products}
+          homepageConfig={homepageConfig}
+          showcase={showcase}
+        >
           <div id="main-content">{children}</div>
         </StoreProvider>
         <LegalBar />

@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
+import { isShowcaseMode, SHOWCASE_MESSAGE } from "@/db/url";
 import { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession } from "@/lib/auth/session";
 import { clientKey, createRateLimiter } from "@/lib/rate-limit";
@@ -25,6 +26,8 @@ const registerLimiter = createRateLimiter({ limit: 5, windowMs: 60_000 });
 const TOO_MANY = "Too many attempts. Please wait a minute and try again.";
 
 export async function loginAction(input: unknown): Promise<AuthResult> {
+  if (isShowcaseMode()) return { ok: false, error: SHOWCASE_MESSAGE };
+
   const client = clientKey(await headers());
   if (!loginLimiter.check(client)) return { ok: false, error: TOO_MANY };
 
@@ -48,6 +51,8 @@ export async function loginAction(input: unknown): Promise<AuthResult> {
 }
 
 export async function registerAction(input: unknown): Promise<AuthResult> {
+  if (isShowcaseMode()) return { ok: false, error: SHOWCASE_MESSAGE };
+
   const client = clientKey(await headers());
   if (!registerLimiter.check(client)) return { ok: false, error: TOO_MANY };
 
@@ -73,5 +78,6 @@ export async function registerAction(input: unknown): Promise<AuthResult> {
 }
 
 export async function logoutAction(): Promise<void> {
+  if (isShowcaseMode()) return;
   await destroySession();
 }

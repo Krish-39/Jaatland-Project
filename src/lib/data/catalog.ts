@@ -2,8 +2,9 @@ import "server-only";
 import { cache } from "react";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
+import { isShowcaseMode } from "@/db/url";
 import { homepageConfig, products, type ProductRow } from "@/db/schema";
-import { DEFAULT_HOMEPAGE_CONFIG } from "@/lib/mock-data";
+import { DEFAULT_HOMEPAGE_CONFIG, DEFAULT_PRODUCTS } from "@/lib/mock-data";
 import type { HomepageConfig, Product, ProductCategory, ProductSize } from "@/lib/types";
 
 export function toProduct(row: ProductRow): Product {
@@ -21,6 +22,8 @@ export function toProduct(row: ProductRow): Product {
 }
 
 export const getProducts = cache(async (): Promise<Product[]> => {
+  if (isShowcaseMode()) return DEFAULT_PRODUCTS;
+
   const db = await getDb();
   const rows = await db
     .select()
@@ -30,12 +33,16 @@ export const getProducts = cache(async (): Promise<Product[]> => {
 });
 
 export const getProduct = cache(async (id: string): Promise<Product | null> => {
+  if (isShowcaseMode()) return DEFAULT_PRODUCTS.find((product) => product.id === id) ?? null;
+
   const db = await getDb();
   const rows = await db.select().from(products).where(eq(products.id, id)).limit(1);
   return rows[0] ? toProduct(rows[0]) : null;
 });
 
 export const getHomepageConfig = cache(async (): Promise<HomepageConfig> => {
+  if (isShowcaseMode()) return DEFAULT_HOMEPAGE_CONFIG;
+
   const db = await getDb();
   const rows = await db.select().from(homepageConfig).where(eq(homepageConfig.id, 1)).limit(1);
   const row = rows[0];

@@ -5,6 +5,7 @@ import { and, eq, gt, lt } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { getDb } from "@/db";
 import { sessions, users } from "@/db/schema";
+import { isShowcaseMode } from "@/db/url";
 
 export interface SessionUser {
   id: string;
@@ -57,6 +58,8 @@ export async function destroySession(): Promise<void> {
 
 /** The signed-in user, or null. Looked up at most once per request. */
 export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
+  if (isShowcaseMode()) return null;
+
   const token = (await cookies()).get(COOKIE_NAME)?.value;
   if (!token) return null;
 

@@ -25,6 +25,8 @@ interface Toast {
 interface StoreContextValue {
   /** True once cart and wishlist have been read from browser storage. */
   isLoaded: boolean;
+  /** No database in this deployment: accounts, admin and checkout are off. */
+  showcase: boolean;
 
   /** Catalog and homepage copy, rendered on the server from the database. */
   products: Product[];
@@ -55,12 +57,14 @@ const StoreContext = createContext<StoreContextValue | null>(null);
 interface StoreProviderProps {
   products: Product[];
   homepageConfig: HomepageConfig;
+  showcase?: boolean;
   children: React.ReactNode;
 }
 
 export function StoreProvider({
   products,
   homepageConfig,
+  showcase = false,
   children,
 }: StoreProviderProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -199,6 +203,7 @@ export function StoreProvider({
   const value = useMemo<StoreContextValue>(
     () => ({
       isLoaded,
+      showcase,
       products,
       homepageConfig,
       cart,
@@ -217,6 +222,7 @@ export function StoreProvider({
     }),
     [
       isLoaded,
+      showcase,
       products,
       homepageConfig,
       cart,

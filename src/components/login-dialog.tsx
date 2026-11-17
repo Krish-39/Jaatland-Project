@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginAction, registerAction } from "@/app/actions/auth";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password-policy";
+import { ShowcaseNotice } from "@/components/showcase-notice";
 import { useStore } from "@/components/store-provider";
 
 interface LoginDialogProps {
@@ -24,7 +25,7 @@ interface LoginDialogProps {
 
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   const router = useRouter();
-  const { setSignedIn } = useStore();
+  const { setSignedIn, showcase } = useStore();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -104,6 +105,8 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
+        {showcase && <ShowcaseNotice />}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="user-email">Email</Label>
@@ -163,7 +166,11 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             </p>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting || showcase}
+          >
             {isSubmitting
               ? "Please wait…"
               : isCreateAccount

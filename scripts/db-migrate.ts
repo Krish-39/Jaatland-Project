@@ -11,10 +11,11 @@ import { databaseUrl, MISSING_DATABASE_MESSAGE } from "../src/db/url";
 async function main() {
   const url = databaseUrl();
   if (!url && process.env.VERCEL) {
-    // Stop before the build with instructions, instead of failing later
-    // inside `next build` with a stack trace.
-    console.error(`\n[db] ${MISSING_DATABASE_MESSAGE.replace(/\n/g, "\n[db] ")}\n`);
-    process.exit(1);
+    // Showcase mode: the site builds and runs from the built-in catalog.
+    console.warn(
+      `\n[db] Deploying in showcase mode (catalog only; sign-in and checkout off).\n[db] ${MISSING_DATABASE_MESSAGE.replace(/\n/g, "\n[db] ")}\n`
+    );
+    return;
   }
   if (!url) {
     console.log("[db] DATABASE_URL is not set; skipping migrations (embedded database is used).");

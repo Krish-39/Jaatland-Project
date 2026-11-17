@@ -5,6 +5,7 @@ import { eq, max } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/db";
 import { homepageConfig, products } from "@/db/schema";
+import { isShowcaseMode, SHOWCASE_MESSAGE } from "@/db/url";
 import { NotAuthorizedError, requireAdmin } from "@/lib/auth/session";
 import { firstIssue, homepageConfigSchema, productInputSchema } from "@/lib/validation";
 
@@ -15,6 +16,8 @@ const NOT_AUTHORIZED: AdminResult = { ok: false, error: "You are not signed in a
 /** Runs an admin mutation: authorization first, then the write, then a
  * revalidation of every page that renders catalog data. */
 async function adminMutation(run: () => Promise<AdminResult>): Promise<AdminResult> {
+  if (isShowcaseMode()) return { ok: false, error: SHOWCASE_MESSAGE };
+
   try {
     await requireAdmin();
   } catch (error) {

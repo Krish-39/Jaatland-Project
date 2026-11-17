@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { sessions, users } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getOrdersForUser } from "@/lib/data/orders";
 
 // Everything stored about the signed-in user, as a JSON download
 // (GDPR Art. 15 and 20). The password hash and session ids are left out:
@@ -24,7 +25,12 @@ export async function GET() {
     .where(eq(sessions.userId, user.id));
 
   const body = JSON.stringify(
-    { exportedAt: new Date().toISOString(), account, sessions: activeSessions },
+    {
+      exportedAt: new Date().toISOString(),
+      account,
+      sessions: activeSessions,
+      orders: await getOrdersForUser(user.id),
+    },
     null,
     2
   );

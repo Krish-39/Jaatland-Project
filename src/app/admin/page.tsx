@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AdminPanel } from "@/components/admin/admin-panel";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getProducts } from "@/lib/data/catalog";
+import { getOrderStats } from "@/lib/data/orders";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -14,5 +16,7 @@ export default async function AdminPage() {
   const user = await getCurrentUser();
   if (user?.role !== "admin") redirect("/");
 
-  return <AdminPanel />;
+  const [products, orderStats] = await Promise.all([getProducts(), getOrderStats()]);
+
+  return <AdminPanel stats={{ productCount: products.length, ...orderStats }} />;
 }

@@ -11,11 +11,10 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard, ShieldCheck, Truck } from "lucide-react";
 import { LS_KEYS } from "@/lib/mock-data";
 import { formatCurrency, getImageUrl } from "@/lib/utils";
-import { createOrder } from "@/lib/orders";
+import { placeOrderAction } from "@/app/actions/orders";
 import { orderTotalFor, shippingCostFor } from "@/lib/shipping";
-import { readJson, writeJson } from "@/lib/storage";
+import { readArray, readJson, writeJson } from "@/lib/storage";
 import { useStore } from "@/components/store-provider";
-import type { Order } from "@/lib/types";
 
 const LS = LS_KEYS;
 
@@ -102,51 +101,40 @@ export default function CheckoutPage() {
     setSubmitError("");
 
     try {
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
       const email = form.email.trim();
-      const newOrder = createOrder({
-        cart,
-        products,
+      // The server looks up every product and computes the prices itself;
+      // only ids, sizes and quantities are sent. Card fields are never sent.
+      const result = await placeOrderAction({
         email,
-        shipping: {
-          name: form.name,
-          address: form.address,
-          city: form.city,
-          zip: form.zip,
-          country: form.country,
-        },
+        name: form.name,
+        address: form.address,
+        city: form.city,
+        zip: form.zip,
+        items: cart.map((line) => ({ id: line.id, size: line.size, qty: line.qty })),
       });
 
-      if (newOrder.items.length !== cart.length) {
-        throw new Error(
-          "Some items in your cart are no longer available. Please update your cart and try again."
-        );
+      if (!result.ok) {
+        setSubmitError(result.error);
+        return;
       }
 
-      // Never store card details. Only the order, with prices snapshotted.
-      const existingOrders = readJson<Order[]>(LS.ORDERS, []);
-      const safeOrders = Array.isArray(existingOrders) ? existingOrders : [];
-      if (!writeJson(LS.ORDERS, [newOrder, ...safeOrders])) {
-        throw new Error(
-          "Could not save your order. Check that browser storage is enabled and try again."
+      // Guests keep a private token so this browser can show the order later.
+      if (result.accessToken) {
+        const refs = readArray<{ id: string; token: string }>(LS.GUEST_ORDERS);
+        writeJson(
+          LS.GUEST_ORDERS,
+          [{ id: result.orderId, token: result.accessToken }, ...refs].slice(0, 25)
         );
       }
-
-      // Remember the buyer so guest orders are visible on /orders too.
       writeJson(LS.BUYER_EMAIL, email);
 
       clearCart();
 
-      setOrderId(newOrder.id);
+      setOrderId(result.orderId);
       setOrderPlaced(true);
     } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong placing your order. Please try again."
-      );
+      console.error(error);
+      setSubmitError("Something went wrong placing your order. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -300,6 +288,10 @@ export default function CheckoutPage() {
                     <Input
                       id="zip"
                       autoComplete="postal-code"
+                      inputMode="numeric"
+                      pattern="[0-9]{5}"
+                      maxLength={5}
+                      title="5-digit German postal code"
                       value={form.zip}
                       onChange={(event) =>
                         handleChange("zip", event.target.value)

@@ -1,19 +1,9 @@
-import { orderTotalFor, shippingCostFor } from "@/lib/shipping";
-import type { Order, OrderItem, OrderShipping, Product } from "@/lib/types";
+import type { Order, OrderItem, Product } from "@/lib/types";
 
 export interface CartLine {
   id: string;
   size?: string;
   qty: number;
-}
-
-export interface CreateOrderInput {
-  cart: CartLine[];
-  products: Product[];
-  email: string;
-  shipping: Omit<OrderShipping, "email">;
-  /** Injectable clock/id source so the order builder stays pure and testable. */
-  now?: number;
 }
 
 export function calculateItemsTotal(
@@ -48,42 +38,6 @@ export function toOrderItems(cart: CartLine[], products: Product[]): OrderItem[]
       },
     ];
   });
-}
-
-export function createOrder({
-  cart,
-  products,
-  email,
-  shipping,
-  now = Date.now(),
-}: CreateOrderInput): Order {
-  const items = toOrderItems(cart, products);
-  const subtotal = calculateItemsTotal(items);
-
-  return {
-    id: `ORD-${now}`,
-    date: new Date(now).toISOString(),
-    email,
-    items,
-    subtotal,
-    shippingCost: shippingCostFor(subtotal),
-    total: orderTotalFor(subtotal),
-    status: "pending",
-    shipping: { ...shipping, email },
-  };
-}
-
-/** Case-insensitive buyer match, supporting legacy orders that only stored
- * the address email instead of the top-level email. */
-export function orderBelongsTo(order: Order, email?: string | null): boolean {
-  if (!email) return false;
-
-  const target = email.trim().toLowerCase();
-  if (!target) return false;
-
-  return [order.email, order.shipping?.email].some(
-    (candidate) => candidate?.trim().toLowerCase() === target
-  );
 }
 
 /** Resolves a line item for display, falling back to the live catalog only for

@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateItemsTotal,
-  createOrder,
   orderAmounts,
-  orderBelongsTo,
   resolveOrderItem,
   toOrderItems,
 } from "./orders";
-import type { Order, Product } from "./types";
+import type { Product } from "./types";
 
 const product: Product = {
   id: "p1",
@@ -18,14 +16,6 @@ const product: Product = {
   size: ["M", "L"],
   images: ["https://example.com/tee.jpg", ""],
   similarIds: [],
-};
-
-const shipping = {
-  name: "Krish Ahir",
-  address: "1 Test Street",
-  city: "Berlin",
-  zip: "10115",
-  country: "Germany",
 };
 
 describe("calculateItemsTotal", () => {
@@ -63,44 +53,6 @@ describe("toOrderItems", () => {
   });
 });
 
-describe("createOrder", () => {
-  it("builds a pending order from the cart", () => {
-    const order = createOrder({
-      cart: [{ id: "p1", size: "M", qty: 2 }],
-      products: [product],
-      email: "buyer@example.com",
-      shipping,
-      now: 1_700_000_000_000,
-    });
-
-    expect(order).toMatchObject({
-      id: "ORD-1700000000000",
-      date: new Date(1_700_000_000_000).toISOString(),
-      email: "buyer@example.com",
-      total: 49.98,
-      status: "pending",
-      shipping: { ...shipping, email: "buyer@example.com" },
-    });
-    expect(order.items).toHaveLength(1);
-    expect(order.subtotal).toBe(49.98);
-    expect(order.shippingCost).toBe(0);
-  });
-
-  it("adds flat-rate shipping below the free-shipping threshold", () => {
-    const order = createOrder({
-      cart: [{ id: "p1", size: "M", qty: 1 }],
-      products: [product],
-      email: "buyer@example.com",
-      shipping,
-      now: 1_700_000_000_000,
-    });
-
-    expect(order.subtotal).toBe(24.99);
-    expect(order.shippingCost).toBe(4.9);
-    expect(order.total).toBe(29.89);
-  });
-});
-
 describe("orderAmounts", () => {
   it("returns the recorded breakdown", () => {
     expect(orderAmounts({ subtotal: 24.99, shippingCost: 4.9, total: 29.89 })).toEqual({
@@ -116,36 +68,6 @@ describe("orderAmounts", () => {
       shippingCost: 0,
       total: 49.98,
     });
-  });
-});
-
-describe("orderBelongsTo", () => {
-  const order = createOrder({
-    cart: [{ id: "p1", qty: 1 }],
-    products: [product],
-    email: "Buyer@Example.com",
-    shipping,
-    now: 1_700_000_000_000,
-  });
-
-  it("matches the buyer email case-insensitively", () => {
-    expect(orderBelongsTo(order, "buyer@example.com")).toBe(true);
-  });
-
-  it("matches legacy orders that only stored shipping.email", () => {
-    const legacy = {
-      ...order,
-      email: undefined,
-      shipping: { ...order.shipping, email: "legacy@example.com" },
-    } as Order;
-
-    expect(orderBelongsTo(legacy, "legacy@example.com")).toBe(true);
-  });
-
-  it("rejects other buyers and empty emails", () => {
-    expect(orderBelongsTo(order, "someone@example.com")).toBe(false);
-    expect(orderBelongsTo(order, "")).toBe(false);
-    expect(orderBelongsTo(order, null)).toBe(false);
   });
 });
 

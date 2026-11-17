@@ -7,11 +7,14 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "server-only": path.resolve(__dirname, "./test/server-only-stub.ts"),
     },
   },
   test: {
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
     restoreMocks: true,
+    // Database tests use an in-memory Postgres, never a real DATABASE_URL.
+    env: { DATABASE_URL: "", PGLITE_DATA_DIR: "memory://" },
   },
 });

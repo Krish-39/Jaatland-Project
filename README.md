@@ -35,11 +35,13 @@ No database setup is needed locally. Without `DATABASE_URL` the app starts an em
 **Checkout and orders**
 
 - Shipping form (Germany only) and an order summary repeated directly above the **Order with obligation to pay** button.
-- Payment is simulated: the card is never charged, transmitted or stored.
-- Orders are still kept in the browser that placed them (see [Known gaps](#known-gaps)).
+- Orders are created on the server and priced from the database; the browser only sends product ids, sizes and quantities.
+- Signed-in customers see their orders in their account. Guests get a private token, kept in their browser, that lets that browser show the order again.
+- Payment is simulated: the card is never charged, transmitted or stored. Demo orders are deleted after 30 days.
 
 **Admin** (`/admin`, admin accounts only)
 
+- Dashboard with order count, order value, customers and recent orders, read from the database.
 - Create, edit and delete products; edit the hero, newsletter copy and featured products. Changes are saved to the database and appear on the storefront immediately.
 
 **Legal and trust**
@@ -58,6 +60,7 @@ pages (prerendered HTML)   ◄──── root layout reads catalog  ───�
 cart / wishlist / theme          server actions                         homepage_config
   in localStorage                  auth:    login, register, logout ──► users
 session cookie (httpOnly) ─────►   admin:   products, homepage     ──► sessions
+                                   orders:  place, list             ──► orders
                                    account: delete
                                  /api/auth/session, /api/account/export
 ```
@@ -77,9 +80,13 @@ The root layout (`src/app/layout.tsx`) reads products and homepage copy through 
 
 `/admin` checks the session on the server on every request and redirects anyone who is not an admin. Every admin server action calls `requireAdmin()` again before writing, so calling an action directly without an admin session is refused. All input is parsed with zod schemas in `src/lib/validation.ts`.
 
+### Orders
+
+`placeOrderAction` (`src/app/actions/orders.ts`) validates the form, loads the catalog from the database and builds the order in `src/lib/data/orders.ts`: every line must be an existing product in a size it is sold in, and item prices, shipping and total are computed on the server. Line items are stored as a snapshot, so later catalog edits never change an order. Guest orders are readable only with their token (stored hashed); an order id alone is not enough.
+
 ### Browser storage
 
-Only per-browser convenience state lives in `localStorage` (keys prefixed `jaatland_`): cart, wishlist, theme, sort, price filter, demo orders, last checkout email and the newsletter field. Reads and writes go through `src/lib/storage.ts`, which tolerates corrupt or unavailable storage. Keys from earlier builds (local accounts, the client-side admin flag, catalog overrides) are deleted on load.
+Only per-browser convenience state lives in `localStorage` (keys prefixed `jaatland_`): cart, wishlist, theme, sort, price filter, guest order tokens, last checkout email and the newsletter field. Reads and writes go through `src/lib/storage.ts`, which tolerates corrupt or unavailable storage. Keys from earlier builds (local accounts, the client-side admin flag, catalog overrides) are deleted on load.
 
 ## Reference
 
@@ -110,6 +117,7 @@ Only per-browser convenience state lives in `localStorage` (keys prefixed `jaatl
 | `/` | Hero, featured row, per-category sections, newsletter |
 | `/product/[id]` | Product detail, with metadata and JSON-LD from the database; unknown ids return 404 |
 | `/checkout`, `/orders` | Demo checkout and order history |
+| `/sitemap.xml`, `/robots.txt` | Generated from the catalog; private pages are excluded from crawling |
 | `/account` | Account details, data export, account deletion (signed-in users) |
 | `/admin` | Dashboard, products, homepage editor (admins) |
 | `/impressum`, `/datenschutz`, `/agb`, `/widerruf`, `/versand-zahlung` | Legal pages |
@@ -163,12 +171,13 @@ npm run typecheck
 npm run lint
 ```
 
-Unit tests cover orders, shipping, storage, rate limiting, validation and password hashing. `src/db/seed.test.ts` runs the real migrations and seed against an in-memory Postgres. Sign-in, the admin guard and admin saves were verified by hand in a browser; there is no automated end-to-end suite yet.
+Unit tests cover order maths, shipping, storage, rate limiting, validation and password hashing. `src/db/seed.test.ts` and `src/lib/data/orders.test.ts` run the real migrations, seed and order logic against an in-memory Postgres. Sign-in, the admin guard, admin saves, checkout and account deletion were verified in a browser during development; there is no committed end-to-end suite yet.
 
 ## Known gaps
 
 - **Operator details are empty** until `src/lib/legal-config.ts` is filled in.
-- **Orders live in the browser.** Checkout is simulated and orders are saved to `localStorage`, so the admin dashboard only sees orders placed in the same browser. Moving orders to the database together with Stripe test payments is the next step.
+- **Payment is simulated.** Orders are stored with status `pending` and no payment provider is called. Wiring the checkout to Stripe (test mode) with a webhook is the next step.
+- **No order emails.** Confirmation emails need an email provider.
 - **The newsletter field only saves to the browser.** No address is collected and no email is sent.
 - **Rate limits are per server instance** (in memory). A shared store such as Upstash Redis would make them global.
 - **No email verification or password reset** yet; both need an email provider.

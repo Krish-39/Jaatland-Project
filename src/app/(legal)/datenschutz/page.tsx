@@ -40,8 +40,12 @@ export default function PrivacyPolicyPage() {
             protected (hashed) form of your password.
           </li>
           <li>
-            Your cart, wishlist, demo orders and display preferences are stored
-            only in your own browser and are not transmitted to us.
+            If you place a demo order, we store the order with your name, email
+            address and delivery address for 30 days, then delete it.
+          </li>
+          <li>
+            Your cart, wishlist and display preferences are stored only in your
+            own browser and are not transmitted to us.
           </li>
           <li>
             Our hosting provider processes technical connection data (such as
@@ -125,9 +129,10 @@ export default function PrivacyPolicyPage() {
         <ul>
           <li>Cart contents and wishlist</li>
           <li>Display preferences: light or dark theme, sort order, price filter</li>
+          <li>The email address you last used at checkout, to prefill the form</li>
           <li>
-            Demo orders: the name, email address, delivery address and items
-            you enter at checkout
+            For orders placed without an account: the order number and a
+            random access key that lets this browser display the order again
           </li>
           <li>The email address you enter in the newsletter field</li>
         </ul>
@@ -139,11 +144,25 @@ export default function PrivacyPolicyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="7. Checkout and payment">
+      <LegalSection heading="7. Demo orders and payment">
         <p>
-          Checkout is simulated. The card details you type into the checkout
-          form are not transmitted and not stored. No payment provider receives
-          any data from this site.
+          When you complete the demo checkout, we store the order: your email
+          address, name, delivery address, the items, prices and the time of
+          the order. If you are signed in, the order is linked to your account.
+          We process this data to show you the order confirmation and your
+          order history and to demonstrate the shop&apos;s order management
+          (Art. 6 (1) (b) GDPR). Orders are visible to the shop administrator.
+        </p>
+        <p>
+          Because no goods are sold, there is no invoice or tax retention
+          duty. Demo orders are deleted automatically 30 days after they were
+          placed, and immediately when you delete your account. Orders are
+          stored in the same database as account data (see section 4).
+        </p>
+        <p>
+          Please do not enter data of other people. Payment is simulated: the
+          card details you type into the checkout form are not transmitted and
+          not stored, and no payment provider receives any data from this site.
         </p>
       </LegalSection>
 

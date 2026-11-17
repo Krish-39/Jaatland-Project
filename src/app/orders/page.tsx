@@ -15,8 +15,9 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Package, MapPin, CreditCard } from "lucide-react";
 import { LS_KEYS } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
-import { orderAmounts, orderBelongsTo, resolveOrderItem } from "@/lib/orders";
-import { readJson } from "@/lib/storage";
+import { getMyOrdersAction } from "@/app/actions/orders";
+import { orderAmounts, resolveOrderItem } from "@/lib/orders";
+import { readArray } from "@/lib/storage";
 import { useStore } from "@/components/store-provider";
 import type { Order } from "@/lib/types";
 
@@ -43,22 +44,32 @@ export default function OrdersPage() {
   const router = useRouter();
   const { products, user, isLoaded } = useStore();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [buyerEmail, setBuyerEmail] = useState("");
   const [ordersLoaded, setOrdersLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
+  // Orders come from the server: the signed-in account's orders, plus guest
+  // orders this browser holds a token for. Reloads when the user signs in/out.
   useEffect(() => {
-    const storedOrders = readJson<Order[]>(LS.ORDERS, []);
-    setOrders(Array.isArray(storedOrders) ? storedOrders : []);
-    setBuyerEmail(readJson<string>(LS.BUYER_EMAIL, ""));
-    setOrdersLoaded(true);
-  }, []);
+    let cancelled = false;
+    const refs = readArray<{ id: string; token: string }>(LS.GUEST_ORDERS);
 
-  // Logged-in users see their account's orders; guests see the orders placed
-  // with the email used at the last checkout on this browser.
-  const viewerEmail = user?.email || buyerEmail || "";
-  const userOrders = viewerEmail
-    ? orders.filter((order) => orderBelongsTo(order, viewerEmail))
-    : [];
+    getMyOrdersAction(refs)
+      .then((result) => {
+        if (!cancelled) setOrders(result);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setOrdersLoaded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const userOrders = orders;
 
   if (!isLoaded || !ordersLoaded) {
     return (
@@ -75,15 +86,15 @@ export default function OrdersPage() {
     );
   }
 
-  if (!viewerEmail) {
+  if (loadError) {
     return (
       <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold">No Orders Yet</h1>
-          <p className="mb-6 text-gray-600 dark:text-gray-400">
-            Place an order or log in to see your order history.
+          <h1 className="mb-4 text-2xl font-bold">Could not load your orders</h1>
+          <p role="alert" className="mb-6 text-gray-600 dark:text-gray-400">
+            Please check your connection and try again.
           </p>
-          <Button onClick={() => router.push("/")}>Go to Home</Button>
+          <Button onClick={() => window.location.reload()}>Try again</Button>
         </div>
       </div>
     );
@@ -96,7 +107,9 @@ export default function OrdersPage() {
           <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
           <h1 className="mb-4 text-2xl font-bold">No Orders Yet</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
-            You haven&apos;t placed any orders yet.
+            {user
+              ? "You haven't placed any orders yet."
+              : "No orders from this browser yet. Log in to see orders placed with your account."}
           </p>
           <Button onClick={() => router.push("/")}>Start Shopping</Button>
         </div>
@@ -119,8 +132,9 @@ export default function OrdersPage() {
         <h1 className="mb-2 text-3xl font-bold">My Orders</h1>
         <p className="mb-8 text-sm text-gray-500">
           {user
-            ? `Signed in as ${viewerEmail}`
-            : `Showing orders placed on this browser as ${viewerEmail}`}
+            ? `Signed in as ${user.email}`
+            : "Showing orders placed as a guest in this browser"}
+          . Demo orders are deleted automatically after 30 days.
         </p>
 
         <div className="space-y-6">

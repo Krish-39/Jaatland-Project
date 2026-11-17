@@ -15,18 +15,17 @@ import {
   saveHomepageConfigAction,
   saveProductAction,
 } from "@/app/actions/admin";
-import { CATEGORIES, SIZES, COLORS, LS_KEYS } from "@/lib/mock-data";
+import { CATEGORIES, SIZES, COLORS } from "@/lib/mock-data";
+import type { AdminStats } from "@/lib/data/orders";
 import { formatCurrency } from "@/lib/utils";
 import { HomepageConfig, Product, ProductCategory, ProductSize } from "@/lib/types";
-import { readArray } from "@/lib/storage";
 import { useStore } from "@/components/store-provider";
 
-const LS = LS_KEYS;
 
 // Rendered only after the server has confirmed an admin session (see
 // src/app/admin/page.tsx). Every save goes through a server action that
 // checks the session again, so this component grants no access by itself.
-export function AdminPanel() {
+export function AdminPanel({ stats }: { stats: AdminStats }) {
   const router = useRouter();
   const { products, logout, notify } = useStore();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -147,7 +146,7 @@ export function AdminPanel() {
           </Button>
         </div>
 
-        {activeTab === "dashboard" && <DashboardTab products={products} />}
+        {activeTab === "dashboard" && <DashboardTab stats={stats} />}
         {activeTab === "products" && (
           <>
             <div className="flex justify-between items-center mb-6">
@@ -231,55 +230,27 @@ export function AdminPanel() {
   );
 }
 
-function DashboardTab({ products }: { products: Product[] }) {
-  const [orders, setOrders] = useState<
-    { id: string; date: string; total: number; status: string }[]
-  >([]);
-  const [wishlistCount, setWishlistCount] = useState(0);
-
-  useEffect(() => {
-    setOrders(readArray(LS.ORDERS));
-    setWishlistCount(readArray<string>(LS.WISHLIST).length);
-  }, []);
-
-  const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
-  const totalOrders = orders.length;
+function DashboardTab({ stats }: { stats: AdminStats }) {
+  const tiles = [
+    { label: "Total Products", value: String(stats.productCount) },
+    { label: "Total Orders", value: String(stats.orderCount) },
+    { label: "Order Value", value: formatCurrency(stats.revenue) },
+    { label: "Customers", value: String(stats.customerCount) },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{products.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalOrders}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Wishlist Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{wishlistCount}</div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+        {tiles.map((tile) => (
+          <Card key={tile.label}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">{tile.label}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{tile.value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
@@ -287,18 +258,27 @@ function DashboardTab({ products }: { products: Product[] }) {
           <CardTitle>Recent Orders</CardTitle>
         </CardHeader>
         <CardContent>
-          {orders.length === 0 ? (
+          {stats.recentOrders.length === 0 ? (
             <p className="py-6 text-center text-sm text-gray-500">
-              No orders in this browser yet. Demo orders are still kept in the
-              browser that placed them, so this list only shows your own.
+              No orders yet. They&apos;ll appear here once customers check out.
             </p>
           ) : (
             <div className="space-y-4">
-              {orders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between border-b pb-2">
-                  <div>
+              {stats.recentOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className="flex items-center justify-between gap-4 border-b pb-2"
+                >
+                  <div className="min-w-0">
                     <div className="font-medium">Order #{order.id}</div>
-                    <div className="text-sm text-gray-500">{new Date(order.date).toLocaleDateString()}</div>
+                    <div className="truncate text-sm text-gray-500">
+                      {new Date(order.date).toLocaleDateString("en-IE", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}{" "}
+                      · {order.email}
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="font-medium">{formatCurrency(order.total)}</div>
@@ -310,6 +290,10 @@ function DashboardTab({ products }: { products: Product[] }) {
               ))}
             </div>
           )}
+          <p className="mt-4 text-xs text-gray-500">
+            Demo orders: no payment is taken, and orders are deleted
+            automatically after 30 days.
+          </p>
         </CardContent>
       </Card>
     </div>

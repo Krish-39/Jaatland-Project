@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   homepageConfigSchema,
   loginSchema,
+  placeOrderSchema,
   productInputSchema,
   registerSchema,
 } from "./validation";
@@ -76,5 +77,39 @@ describe("homepageConfigSchema", () => {
     expect(
       homepageConfigSchema.safeParse({ ...config, heroImage: "https://example.com/a.jpg" }).success
     ).toBe(false);
+  });
+});
+
+describe("placeOrderSchema", () => {
+  const order = {
+    email: "Buyer@Example.com",
+    name: "Test Buyer",
+    address: "Teststr. 1",
+    city: "Berlin",
+    zip: "10115",
+    items: [{ id: "p1", size: "M", qty: 2 }],
+  };
+
+  it("accepts a valid order and normalises the email", () => {
+    expect(placeOrderSchema.parse(order).email).toBe("buyer@example.com");
+  });
+
+  it("rejects empty carts, bad quantities and non-German postal codes", () => {
+    expect(placeOrderSchema.safeParse({ ...order, items: [] }).success).toBe(false);
+    expect(
+      placeOrderSchema.safeParse({ ...order, items: [{ id: "p1", qty: 0 }] }).success
+    ).toBe(false);
+    expect(
+      placeOrderSchema.safeParse({ ...order, items: [{ id: "p1", qty: 1.5 }] }).success
+    ).toBe(false);
+    expect(placeOrderSchema.safeParse({ ...order, zip: "1011" }).success).toBe(false);
+  });
+
+  it("ignores a price smuggled into a cart line", () => {
+    const parsed = placeOrderSchema.parse({
+      ...order,
+      items: [{ id: "p1", qty: 1, price: 0.01 }],
+    });
+    expect(parsed.items[0]).toEqual({ id: "p1", qty: 1 });
   });
 });

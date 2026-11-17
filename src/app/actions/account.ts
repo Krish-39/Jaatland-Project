@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { destroySession, getCurrentUser } from "@/lib/auth/session";
+import { deleteOrdersForUser } from "@/lib/data/orders";
 
 export type AccountResult = { ok: true } | { ok: false; error: string };
 
@@ -19,6 +20,10 @@ export async function deleteAccountAction(): Promise<AccountResult> {
       error: "The admin account cannot be deleted here, so the shop is never left without an admin.",
     };
   }
+
+  // Demo orders have no invoice or tax purpose, so they are erased with the
+  // account. A live shop would have to keep invoices for the statutory period.
+  await deleteOrdersForUser(user.id);
 
   const db = await getDb();
   await db.delete(users).where(eq(users.id, user.id));

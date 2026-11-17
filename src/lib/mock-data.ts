@@ -106,9 +106,11 @@ export const LS_KEYS = {
   THEME: 'jaatland_theme',
   PRICE: 'jaatland_price',
   SORT: 'jaatland_sort',
-  /** Email used at the last guest checkout, so guests can see their orders. */
+  /** Email used at the last checkout, to prefill the form next time. */
   BUYER_EMAIL: 'jaatland_buyer_email',
-  ORDERS: 'jaatland_orders',
+  /** `{ id, token }` for each order placed as a guest in this browser. The
+   * token is what lets a guest view that order again. */
+  GUEST_ORDERS: 'jaatland_guest_orders',
   NEWSLETTER: 'jaatland_newsletter_email',
 } as const;
 
@@ -120,6 +122,7 @@ export const LEGACY_LS_KEYS = [
   'jaatland_user_email',
   'jaatland_user_password',
   'jaatland_admin_email',
+  'jaatland_orders',
   'jaatland_products',
   'jaatland_products_v2',
   'jaatland_homepage',

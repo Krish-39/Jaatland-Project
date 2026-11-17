@@ -2,16 +2,11 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowUp,
-  Check,
-  Facebook,
-  Instagram,
-  Shirt,
-  X as XIcon,
-} from "lucide-react";
+import Link from "next/link";
+import { ArrowUp, Check, Shirt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LEGAL_LINKS } from "@/lib/legal-config";
 import { CATEGORIES, LS_KEYS } from "@/lib/mock-data";
 import { writeString } from "@/lib/storage";
 import { useStore } from "@/components/store-provider";
@@ -68,7 +63,7 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
               {newsletterDone ? (
                 <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
                   <Check className="h-5 w-5" />
-                  You&apos;re on the list. Welcome to the club!
+                  Saved in this browser. Thanks for trying the demo!
                 </div>
               ) : (
                 <form className="space-y-2" onSubmit={subscribe}>
@@ -85,8 +80,16 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
                     />
                     <Button type="submit">Subscribe</Button>
                   </div>
-                  <p className="text-xs opacity-60">
-                    Early access to drops. No spam — unsubscribe anytime.
+                  <p className="text-xs opacity-70">
+                    Demo: your email is saved only in this browser and no
+                    emails are sent. See our{" "}
+                    <Link
+                      href="/datenschutz"
+                      className="underline underline-offset-2"
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
                   </p>
                   {newsletterError && (
                     <p role="alert" className="text-xs text-red-600">
@@ -106,8 +109,7 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
               <span className="font-extrabold">JAATLAND</span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed opacity-70">
-              Made with care in Europe. Sustainable fabrics, fair wages, and
-              small-batch production.
+              Everyday basics and statement pieces, released in limited drops.
             </p>
           </div>
 
@@ -166,36 +168,19 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
           </div>
 
           <div className="text-sm">
-            <div className="font-semibold">Follow</div>
-            <div className="mt-3 flex items-center gap-3 opacity-80">
-              <a
-                href="https://www.instagram.com/"
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label="Jaatland on Instagram"
-                className="rounded-md p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="https://x.com/"
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label="Jaatland on X"
-                className="rounded-md p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                <XIcon className="h-5 w-5" />
-              </a>
-              <a
-                href="https://www.facebook.com/"
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label="Jaatland on Facebook"
-                className="rounded-md p-2 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-            </div>
+            <div className="font-semibold">Help &amp; Legal</div>
+            <ul className="mt-3 space-y-2 opacity-80">
+              {LEGAL_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="transition-opacity hover:opacity-100 hover:underline"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
@@ -205,7 +190,7 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
             reserved.
           </p>
           <div className="flex items-center gap-4">
-            <span>Demo store — no real payments are processed</span>
+            <span>All prices incl. VAT, plus shipping</span>
             <button
               type="button"
               onClick={scrollToTop}

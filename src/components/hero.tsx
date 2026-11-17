@@ -1,9 +1,11 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/product-image";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import type { HomepageConfig } from "@/lib/types";
 
 function scrollTo(id: string) {
@@ -43,32 +45,37 @@ export function Hero({ config }: { config: HomepageConfig }) {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm opacity-80">
-            <div className="flex items-center gap-2">
-              <Truck className="h-4 w-4" /> Free EU shipping €40+
-            </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4" /> 30-day returns
-            </div>
+            <Link
+              href="/versand-zahlung"
+              className="flex items-center gap-2 hover:underline"
+            >
+              <Truck className="h-4 w-4" /> Free shipping from €
+              {FREE_SHIPPING_THRESHOLD}
+            </Link>
+            <Link
+              href="/widerruf"
+              className="flex items-center gap-2 hover:underline"
+            >
+              <ShieldCheck className="h-4 w-4" /> 14-day right of withdrawal
+            </Link>
           </div>
         </div>
 
         <div className="relative h-72 overflow-hidden rounded-3xl shadow-2xl md:h-[420px]">
           {config.heroImage && (
-            <Image
+            <ProductImage
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
               src={config.heroImage}
-              alt="Jaatland new season collection"
+              alt="T-shirts in several colours on a clothes rail"
               priority
-              loading="eager"
             />
           )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-black/15" />
           <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/90 px-4 py-3 shadow-lg backdrop-blur dark:bg-slate-950/85">
             <p className="text-sm font-semibold">New season essentials</p>
             <p className="text-xs opacity-70">
-              Small-batch drops · Consciously crafted · Delivered worldwide
+              Tees, hoodies, joggers and accessories in limited drops
             </p>
           </div>
         </div>

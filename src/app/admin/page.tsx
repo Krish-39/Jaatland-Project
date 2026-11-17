@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Edit, Trash2, BarChart3, Home, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { ProductImage } from "@/components/product-image";
 import {
   CATEGORIES,
   SIZES,
@@ -169,12 +169,11 @@ export default function AdminPage() {
                 <Card key={product.id} className="overflow-hidden">
                   <CardHeader className="p-0">
                     <div className="relative h-48 w-full">
-                      <Image
-                        src={product.images[0] || "/favicon.ico"}
+                      <ProductImage
+                        src={product.images[0]}
                         alt={product.name}
                         fill
                         sizes="(max-width: 768px) 100vw, 25vw"
-                        className="object-cover"
                       />
                       {product.badge && (
                         <Badge className="absolute left-3 top-3" variant="secondary">
@@ -398,6 +397,11 @@ function HomepageTab() {
               value={homepageConfig.heroImage}
               onChange={(e) => setHomepageConfig((prev) => ({ ...prev, heroImage: e.target.value }))}
             />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Use a file under <code>/products/</code> or an
+              <code> images.unsplash.com</code> URL. Only use images you hold
+              the rights to; other hosts show a placeholder.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -441,12 +445,12 @@ function HomepageTab() {
                           checked={selectedProducts.includes(product.id)}
                           onCheckedChange={() => toggleProductInCategory(category, product.id)}
                         />
-                        <Image
-                          src={product.images[0] || "/favicon.ico"}
+                        <ProductImage
+                          src={product.images[0]}
                           alt={product.name}
                           width={32}
                           height={32}
-                          className="w-8 h-8 rounded object-cover"
+                          className="h-8 w-8 rounded"
                         />
                         <span className="text-sm truncate">{product.name}</span>
                       </label>
@@ -656,6 +660,11 @@ function ProductForm({
 
           <div>
             <Label>Images</Label>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Use a file under <code>/products/</code> or an
+              <code> images.unsplash.com</code> URL. Only use images you hold
+              the rights to; other hosts show a placeholder.
+            </p>
             {formData.images.map((image, index) => (
               <div key={index} className="flex gap-2 mt-2">
                 <Input

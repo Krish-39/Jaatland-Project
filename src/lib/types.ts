@@ -52,6 +52,11 @@ export interface Order {
   date: string;
   email?: string;
   items: OrderItem[];
+  /** Items total before shipping. Missing on orders saved by older builds. */
+  subtotal?: number;
+  /** Shipping charged. Missing on orders saved by older builds (was free). */
+  shippingCost?: number;
+  /** Grand total the customer pays: items plus shipping, VAT included. */
   total: number;
   status: OrderStatus;
   shipping: OrderShipping;

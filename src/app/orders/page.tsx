@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Package, MapPin, CreditCard } from "lucide-react";
 import { LS_KEYS } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
-import { orderBelongsTo, resolveOrderItem } from "@/lib/orders";
+import { orderAmounts, orderBelongsTo, resolveOrderItem } from "@/lib/orders";
 import { readJson } from "@/lib/storage";
 import { useStore } from "@/components/store-provider";
 import type { Order } from "@/lib/types";
@@ -124,7 +124,9 @@ export default function OrdersPage() {
         </p>
 
         <div className="space-y-6">
-          {userOrders.map((order) => (
+          {userOrders.map((order) => {
+            const amounts = orderAmounts(order);
+            return (
             <Card key={order.id}>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-4">
@@ -211,16 +213,20 @@ export default function OrdersPage() {
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span>Subtotal</span>
-                          <span>{formatCurrency(order.total)}</span>
+                          <span>{formatCurrency(amounts.subtotal)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Shipping</span>
-                          <span>Free</span>
+                          <span>
+                            {amounts.shippingCost === 0
+                              ? "Free"
+                              : formatCurrency(amounts.shippingCost)}
+                          </span>
                         </div>
                         <Separator className="my-2" />
                         <div className="flex justify-between font-semibold">
-                          <span>Total</span>
-                          <span>{formatCurrency(order.total)}</span>
+                          <span>Total (incl. VAT)</span>
+                          <span>{formatCurrency(amounts.total)}</span>
                         </div>
                       </div>
                     </div>
@@ -228,7 +234,8 @@ export default function OrdersPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

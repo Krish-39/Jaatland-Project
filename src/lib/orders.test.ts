@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   calculateItemsTotal,
   createOrder,
+  orderAmounts,
   orderBelongsTo,
   resolveOrderItem,
   toOrderItems,
@@ -81,6 +82,40 @@ describe("createOrder", () => {
       shipping: { ...shipping, email: "buyer@example.com" },
     });
     expect(order.items).toHaveLength(1);
+    expect(order.subtotal).toBe(49.98);
+    expect(order.shippingCost).toBe(0);
+  });
+
+  it("adds flat-rate shipping below the free-shipping threshold", () => {
+    const order = createOrder({
+      cart: [{ id: "p1", size: "M", qty: 1 }],
+      products: [product],
+      email: "buyer@example.com",
+      shipping,
+      now: 1_700_000_000_000,
+    });
+
+    expect(order.subtotal).toBe(24.99);
+    expect(order.shippingCost).toBe(4.9);
+    expect(order.total).toBe(29.89);
+  });
+});
+
+describe("orderAmounts", () => {
+  it("returns the recorded breakdown", () => {
+    expect(orderAmounts({ subtotal: 24.99, shippingCost: 4.9, total: 29.89 })).toEqual({
+      subtotal: 24.99,
+      shippingCost: 4.9,
+      total: 29.89,
+    });
+  });
+
+  it("treats legacy orders as free shipping", () => {
+    expect(orderAmounts({ total: 49.98 })).toEqual({
+      subtotal: 49.98,
+      shippingCost: 0,
+      total: 49.98,
+    });
   });
 });
 

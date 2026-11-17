@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { PriceNote } from "@/components/price-note";
 import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +98,7 @@ export function ProductCard({
         <div className="pt-1 text-lg font-semibold">
           {formatCurrency(product.price)}
         </div>
+        <PriceNote />
       </CardContent>
 
       <CardFooter className="flex items-center justify-between gap-2 p-4 pt-0">

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,11 @@ import {
   Trash2,
 } from "lucide-react";
 import { CATEGORIES, SIZES, COLORS } from "@/lib/mock-data";
+import {
+  FREE_SHIPPING_THRESHOLD,
+  orderTotalFor,
+  shippingCostFor,
+} from "@/lib/shipping";
 import { formatCurrency, getImageUrl } from "@/lib/utils";
 import { LoginDialog } from "@/components/login-dialog";
 import { useStore } from "@/components/store-provider";
@@ -52,7 +58,6 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "nameAsc", label: "Name: A → Z" },
 ];
 
-const FREE_SHIPPING_THRESHOLD = 40;
 
 function FilterCheckboxGroup({
   label,
@@ -527,12 +532,38 @@ export function StoreHeader({
                 )}
 
                 <Separator className="my-4" />
-                <div className="flex items-center justify-between">
-                  <span className="text-sm opacity-70">Subtotal</span>
-                  <span className="text-lg font-semibold">
-                    {formatCurrency(subtotal)}
-                  </span>
-                </div>
+                <dl className="space-y-1 text-sm">
+                  <div className="flex items-center justify-between">
+                    <dt className="opacity-70">Subtotal</dt>
+                    <dd>{formatCurrency(subtotal)}</dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt className="opacity-70">
+                      <Link
+                        href="/versand-zahlung"
+                        className="underline underline-offset-2"
+                      >
+                        Shipping
+                      </Link>
+                    </dt>
+                    <dd>
+                      {cart.length === 0
+                        ? "—"
+                        : shippingCostFor(subtotal) === 0
+                          ? "Free"
+                          : formatCurrency(shippingCostFor(subtotal))}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between pt-1">
+                    <dt className="font-medium">Total</dt>
+                    <dd className="text-lg font-semibold">
+                      {formatCurrency(orderTotalFor(subtotal))}
+                    </dd>
+                  </div>
+                </dl>
+                <p className="mt-1 text-right text-xs text-slate-500 dark:text-slate-400">
+                  incl. VAT
+                </p>
                 <Button
                   className="mt-4 w-full"
                   disabled={cart.length === 0}

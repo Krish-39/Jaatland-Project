@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { ArrowLeft, CreditCard, ShieldCheck, Truck } from "lucide-react";
 import { LS_KEYS } from "@/lib/mock-data";
 import { formatCurrency, getImageUrl } from "@/lib/utils";
 import { createOrder } from "@/lib/orders";
+import { orderTotalFor, shippingCostFor } from "@/lib/shipping";
 import { readJson, writeJson } from "@/lib/storage";
 import { useStore } from "@/components/store-provider";
 import type { Order } from "@/lib/types";
@@ -79,6 +81,8 @@ export default function CheckoutPage() {
       ),
     [cartItems]
   );
+  const shippingCost = shippingCostFor(total);
+  const grandTotal = orderTotalFor(total);
 
   const handleChange = (field: string, value: string) => {
     let next = value;
@@ -309,11 +313,15 @@ export default function CheckoutPage() {
                       id="country"
                       autoComplete="country-name"
                       value={form.country}
-                      onChange={(event) =>
-                        handleChange("country", event.target.value)
-                      }
-                      required
+                      readOnly
+                      aria-describedby="country-hint"
                     />
+                    <p
+                      id="country-hint"
+                      className="mt-1 text-xs text-slate-500 dark:text-slate-400"
+                    >
+                      Delivery within Germany only.
+                    </p>
                   </div>
                 </div>
               </section>
@@ -378,11 +386,31 @@ export default function CheckoutPage() {
 
               <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
                 <span className="font-medium">
-                  Demo checkout — no payment is processed.
+                  Demo checkout — no payment is processed and nothing is
+                  shipped.
                 </span>{" "}
                 Don&apos;t enter real card details; nothing is charged or sent
                 anywhere.
               </div>
+
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Our{" "}
+                <Link href="/agb" className="underline underline-offset-2">
+                  Terms
+                </Link>{" "}
+                apply. Please note the{" "}
+                <Link href="/widerruf" className="underline underline-offset-2">
+                  right of withdrawal
+                </Link>{" "}
+                and our{" "}
+                <Link
+                  href="/datenschutz"
+                  className="underline underline-offset-2"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </p>
 
               {submitError && (
                 <p
@@ -393,6 +421,45 @@ export default function CheckoutPage() {
                 </p>
               )}
 
+              {/* § 312j BGB: the goods, total price and shipping must be shown
+                  directly above the order button, on every screen size. */}
+              <section
+                aria-labelledby="order-recap-heading"
+                className="rounded-lg border p-4 text-sm"
+              >
+                <h2 id="order-recap-heading" className="mb-2 font-semibold">
+                  Your order
+                </h2>
+                <ul className="space-y-1">
+                  {cartItems.map((item) => (
+                    <li
+                      key={`recap-${item.id}-${item.size || "default"}`}
+                      className="flex justify-between gap-4"
+                    >
+                      <span>
+                        {item.qty} × {item.product?.name ?? "Unavailable item"}
+                        {item.size ? `, size ${item.size}` : ""}
+                      </span>
+                      <span>
+                        {formatCurrency((item.product?.price || 0) * item.qty)}
+                      </span>
+                    </li>
+                  ))}
+                  <li className="flex justify-between gap-4">
+                    <span>Shipping (Germany)</span>
+                    <span>
+                      {shippingCost === 0
+                        ? "Free"
+                        : formatCurrency(shippingCost)}
+                    </span>
+                  </li>
+                </ul>
+                <div className="mt-2 flex justify-between gap-4 border-t pt-2 font-semibold">
+                  <span>Total incl. VAT</span>
+                  <span>{formatCurrency(grandTotal)}</span>
+                </div>
+              </section>
+
               <Button
                 type="submit"
                 className="w-full"
@@ -401,7 +468,7 @@ export default function CheckoutPage() {
               >
                 {isProcessing
                   ? "Placing order..."
-                  : `Place Order · ${formatCurrency(total)}`}
+                  : `Order with obligation to pay · ${formatCurrency(grandTotal)}`}
               </Button>
             </form>
           </div>
@@ -449,8 +516,18 @@ export default function CheckoutPage() {
                   <span>{formatCurrency(total)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>Shipping</span>
-                  <span>Free</span>
+                  <span>
+                    <Link
+                      href="/versand-zahlung"
+                      className="underline underline-offset-2"
+                    >
+                      Shipping
+                    </Link>{" "}
+                    (Germany)
+                  </span>
+                  <span>
+                    {shippingCost === 0 ? "Free" : formatCurrency(shippingCost)}
+                  </span>
                 </div>
               </div>
 
@@ -458,8 +535,11 @@ export default function CheckoutPage() {
 
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>{formatCurrency(total)}</span>
+                <span>{formatCurrency(grandTotal)}</span>
               </div>
+              <p className="mt-1 text-right text-xs text-slate-500 dark:text-slate-400">
+                incl. VAT
+              </p>
 
               <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
                 <ShieldCheck className="h-4 w-4" />

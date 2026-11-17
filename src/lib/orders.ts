@@ -1,3 +1,4 @@
+import { orderTotalFor, shippingCostFor } from "@/lib/shipping";
 import type { Order, OrderItem, OrderShipping, Product } from "@/lib/types";
 
 export interface CartLine {
@@ -57,13 +58,16 @@ export function createOrder({
   now = Date.now(),
 }: CreateOrderInput): Order {
   const items = toOrderItems(cart, products);
+  const subtotal = calculateItemsTotal(items);
 
   return {
     id: `ORD-${now}`,
     date: new Date(now).toISOString(),
     email,
     items,
-    total: calculateItemsTotal(items),
+    subtotal,
+    shippingCost: shippingCostFor(subtotal),
+    total: orderTotalFor(subtotal),
     status: "pending",
     shipping: { ...shipping, email },
   };
@@ -98,4 +102,23 @@ export function resolveOrderItem(
         ? item.price
         : product?.price ?? 0,
   };
+}
+
+/** Subtotal / shipping / total for display. Orders saved before shipping was
+ * recorded only have `total`, which was the items total with free shipping. */
+export function orderAmounts(order: Pick<Order, "subtotal" | "shippingCost" | "total">): {
+  subtotal: number;
+  shippingCost: number;
+  total: number;
+} {
+  const shippingCost =
+    typeof order.shippingCost === "number" && Number.isFinite(order.shippingCost)
+      ? order.shippingCost
+      : 0;
+  const subtotal =
+    typeof order.subtotal === "number" && Number.isFinite(order.subtotal)
+      ? order.subtotal
+      : Math.round((order.total - shippingCost) * 100) / 100;
+
+  return { subtotal, shippingCost, total: order.total };
 }

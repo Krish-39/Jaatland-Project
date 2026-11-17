@@ -9,11 +9,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const product = DEFAULT_PRODUCTS.find((p) => p.id === id);
 
   if (!product) {
-    return { title: "Product | Jaatland" };
+    return { title: "Product" };
   }
 
   return {
-    title: `${product.name} | Jaatland`,
+    title: product.name,
     description: `${product.name} — ${formatCurrency(product.price)} · ${product.category} · ${
       product.color
     }. Premium wear from Jaatland Clothing Co.`,

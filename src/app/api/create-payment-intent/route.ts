@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { DEFAULT_PRODUCTS } from '@/lib/mock-data';
 import { clientKey, createRateLimiter } from '@/lib/rate-limit';
+import { orderTotalFor } from '@/lib/shipping';
 
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeKey ? new Stripe(stripeKey) : null;
@@ -91,7 +92,8 @@ export async function POST(request: NextRequest) {
       const product = catalog.get(line.id);
       return product ? sum + product.price * line.qty : sum;
     }, 0);
-    const amountInCents = Math.round(amount * 100);
+    // Charge exactly what checkout displays: items plus shipping.
+    const amountInCents = Math.round(orderTotalFor(amount) * 100);
 
     if (!Number.isSafeInteger(amountInCents) || amountInCents <= 0) {
       return NextResponse.json({ error: 'Invalid order total' }, { status: 400 });

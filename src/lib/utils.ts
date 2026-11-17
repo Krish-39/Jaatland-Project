@@ -19,6 +19,23 @@ export function getImageUrl(product: { images?: string[] | null }): string {
   return product.images?.find((img) => !!img) || '';
 }
 
+// Hosts next/image is configured to load from (see next.config.ts). Anything
+// else would make next/image throw at render time, so callers check first.
+const ALLOWED_IMAGE_HOSTS = ['images.unsplash.com'];
+
+/** True for local files ("/products/x.jpg") and for allowlisted https hosts. */
+export function isAllowedImageSrc(src?: string | null): src is string {
+  if (!src) return false;
+  if (src.startsWith('/')) return !src.startsWith('//');
+
+  try {
+    const url = new URL(src);
+    return url.protocol === 'https:' && ALLOWED_IMAGE_HOSTS.includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export function generateId(prefix: string = 'p'): string {
   return `${prefix}${Date.now()}`;
 }

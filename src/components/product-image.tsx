@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { Shirt } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, isAllowedImageSrc } from "@/lib/utils";
 
 interface ProductImageProps {
   src?: string | null;
@@ -16,8 +16,9 @@ interface ProductImageProps {
   priority?: boolean;
 }
 
-// Renders a Shirt-icon placeholder when the product has no image URL,
-// or when a remote image fails to load (e.g. dead/removed host).
+// Renders a Shirt-icon placeholder when the product has no image URL, when the
+// URL is not a local file or an allowlisted host (next/image would throw), or
+// when the image fails to load.
 export function ProductImage({
   src,
   alt,
@@ -30,7 +31,7 @@ export function ProductImage({
 }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
 
-  if (!src || failed) {
+  if (!isAllowedImageSrc(src) || failed) {
     return (
       <div
         role="img"

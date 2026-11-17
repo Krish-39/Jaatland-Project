@@ -3,12 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
+import { PriceNote } from "@/components/price-note";
 import { ProductImage } from "@/components/product-image";
 import { ProductDetailSkeleton } from "@/components/product-grid-skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Heart, Share2, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { formatCurrency, getImageUrl } from "@/lib/utils";
 import { useStore } from "@/components/store-provider";
 import type { Product } from "@/lib/types";
@@ -191,17 +193,27 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="text-3xl font-bold">
-              {formatCurrency(product.price)}
+            <div>
+              <div className="text-3xl font-bold">
+                {formatCurrency(product.price)}
+              </div>
+              <PriceNote className="mt-1 text-sm" />
             </div>
 
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <span className="flex items-center gap-2">
-                <Truck className="h-4 w-4" /> Free EU shipping over €40
-              </span>
-              <span className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4" /> 30-day returns
-              </span>
+              <Link
+                href="/versand-zahlung"
+                className="flex items-center gap-2 hover:underline"
+              >
+                <Truck className="h-4 w-4" /> Free shipping from €
+                {FREE_SHIPPING_THRESHOLD}
+              </Link>
+              <Link
+                href="/widerruf"
+                className="flex items-center gap-2 hover:underline"
+              >
+                <ShieldCheck className="h-4 w-4" /> 14-day right of withdrawal
+              </Link>
             </div>
 
             <Separator />
@@ -330,6 +342,7 @@ export default function ProductDetailPage() {
                         {similar.category}
                       </span>
                     </div>
+                    <PriceNote plain />
                   </div>
                 </Link>
               ))}

@@ -35,7 +35,7 @@ Registration keeps a single account per browser (one `jaatland_user_email` key),
 - Browse four categories (Men, Women, Unisex, Accessories) with a featured row plus one section per category.
 - Search by name, filter by category, size, colour, and price range, and sort four ways. Any active filter swaps the homepage grid for a single results view.
 - Add to cart from a card or the product page. Lines split by size, so the same shirt in M and L are separate entries.
-- Watch the cart's free-shipping bar fill toward **€40**, with a toast confirming each change.
+- Watch the cart's free-shipping bar fill toward **€40**, with a toast confirming each change. Below €40 a €4.90 flat rate is added; the cart, checkout and order history all show the same shipping line and total.
 
 **Product detail**
 
@@ -43,7 +43,7 @@ Registration keeps a single account per browser (one `jaatland_user_email` key),
 
 **Checkout and orders**
 
-- Shipping form, card form with live input formatting, and an order summary.
+- Shipping form (Germany only), card form with live input formatting, and an order summary repeated directly above the **Order with obligation to pay** button.
 - Payment is simulated: the card is never charged and never stored.
 - Order history is scoped to the signed-in email, or to the email used at the last guest checkout on that browser.
 
@@ -52,6 +52,13 @@ Registration keeps a single account per browser (one `jaatland_user_email` key),
 - Dashboard: total products, total orders, revenue, wishlist items, and recent orders, all read from local data.
 - Products: create, edit, and delete catalog entries, including images, sizes, badge, and related products.
 - Homepage: edit the hero title, subtitle, and image, the newsletter copy, and which products appear in each category row.
+
+**Legal and trust**
+
+- Legal Notice (`/impressum`), Privacy Policy (`/datenschutz`), Terms (`/agb`), Right of Withdrawal (`/widerruf`) and Shipping & Payment (`/versand-zahlung`), linked from every page.
+- A site-wide banner states that this is a demo: nothing is sold, charged or shipped.
+- Every price carries "incl. VAT, plus shipping".
+- No cookies, no analytics, no third-party requests while browsing: fonts and product photos are served from the site itself.
 
 **Everywhere**
 
@@ -128,6 +135,7 @@ Every read and write goes through `src/lib/storage.ts`. One corrupt `localStorag
 | `/orders` | `src/app/orders/page.tsx` | Order history for the current viewer |
 | `/admin` | `src/app/admin/page.tsx` | Dashboard, products, homepage editor |
 | `POST /api/create-payment-intent` | `src/app/api/create-payment-intent/route.ts` | Stripe PaymentIntent (not called by the UI) |
+| `/impressum`, `/datenschutz`, `/agb`, `/widerruf`, `/versand-zahlung` | `src/app/(legal)/*/page.tsx` | Legal pages (static, server-rendered) |
 | (boundaries) | `src/app/error.tsx`, `src/app/not-found.tsx` | Error and 404 screens |
 
 ### Browser storage keys
@@ -136,8 +144,8 @@ All keys are prefixed `jaatland_` and declared in `LS_KEYS` (`src/lib/mock-data.
 
 | Key | Holds |
 | --- | --- |
-| `jaatland_products` | Admin-edited catalog (JSON array of `Product`) |
-| `jaatland_homepage` | Admin-edited hero, newsletter copy, per-category product ids |
+| `jaatland_products_v2` | Admin-edited catalog (JSON array of `Product`) |
+| `jaatland_homepage_v2` | Admin-edited hero, newsletter copy, per-category product ids |
 | `jaatland_cart` | Cart lines: `{ id, size, qty }` |
 | `jaatland_wishlist` | Product ids |
 | `jaatland_orders` | Order records |
@@ -158,6 +166,20 @@ All keys are prefixed `jaatland_` and declared in `LS_KEYS` (`src/lib/mock-data.
 - **Sizes:** XS, S, M, L, XL, XXL (plus `One` for accessories, in the `ProductSize` type)
 - **Colours:** Black, White, Gray, Blue, Beige, Olive, Red, Maroon
 
+Shipping prices live in `src/lib/shipping.ts` (`FREE_SHIPPING_THRESHOLD`, `SHIPPING_FLAT_RATE`). The cart, checkout, order builder, payment route and the Shipping & Payment page all read from it.
+
+### Legal configuration
+
+`src/lib/legal-config.ts` holds the operator's name, address and contact details used by the legal pages. They ship empty on purpose: German law requires the real details of whoever runs the site, so the Legal Notice shows a warning until they are filled in. **Fill them in before deploying publicly.** The legal texts are written for this demo and are not legal advice; have them reviewed before selling anything for real.
+
+### Images
+
+Product and hero photos are local files in `public/products/`, taken from Unsplash under the Unsplash License; `public/products/CREDITS.md` lists each source. `next/image` only accepts local paths and `images.unsplash.com`; any other URL (including one typed into the admin panel) renders the placeholder instead. Only add images you hold the rights to.
+
+### Security headers
+
+`next.config.ts` sends a Content Security Policy, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy` on every response. The CSP still allows inline scripts, which Next.js needs until nonces are added.
+
 ### Payment endpoint
 
 `POST /api/create-payment-intent` returns a Stripe client secret. It exists so payments can be wired up later; the storefront never calls it, which is why checkout works without a key. It prices orders from the server-side catalog and allows 10 requests per client per minute (`src/lib/rate-limit.ts`; in-memory, so per server instance).
@@ -175,7 +197,7 @@ Request body:
 
 | Behaviour | Detail |
 | --- | --- |
-| Pricing | Recomputed server-side from `DEFAULT_PRODUCTS`; an amount supplied by the client is ignored |
+| Pricing | Recomputed server-side from `DEFAULT_PRODUCTS` plus shipping; an amount supplied by the client is ignored |
 | Limits | 1 to 50 lines; each `qty` an integer from 1 to 99; unknown product ids rejected |
 | Currency | EUR, card only |
 | Responses | `200 { clientSecret }`, `400` bad body or unknown product, `503` no key configured, `500` provider error (details logged server-side only) |
@@ -199,11 +221,13 @@ src/
     use-product-filters.ts  Shared search, filter, sort, and price state
   lib/
     mock-data.ts  Seed catalog, constants, storage keys, admin credentials
+    shipping.ts   Shipping threshold, flat rate and totals (pure, tested)
+    legal-config.ts  Operator details and legal page links
     orders.ts     Order snapshots, totals, buyer matching (pure, tested)
     storage.ts    Guarded localStorage reads and writes (tested)
     types.ts      Shared types
     utils.ts      cn(), EUR formatting, image and id helpers (tested)
-public/               Brand favicon plus unused Next.js SVG placeholders
+public/               Brand favicon and product photos (public/products, with CREDITS.md)
 ```
 
 ## Common tasks
@@ -230,10 +254,10 @@ Go to `/admin` > **Homepage**. The hero title, subtitle, and image come from her
 
 ## Testing
 
-31 unit tests across four files. They cover pure logic rather than rendered components:
+41 unit tests across five files. They cover pure logic rather than rendered components:
 
 ```bash
-npm run test:run      # orders (12), storage (10), rate-limit (6), utils (3)
+npm run test:run      # orders (15), storage (10), rate-limit (6), shipping (5), utils (5)
 npm run typecheck
 npm run lint
 ```
@@ -243,7 +267,8 @@ npm run lint
 ## Known gaps
 
 - **Admin-added products get a generic title until the page loads.** Server metadata only knows the seed catalog, so the first paint says `Product | Jaatland`; the page then sets the real title from the client store.
-- **Product images are hotlinked.** `next.config.ts` allowlists seven external hosts (Unsplash, Zalando, iStock, Shutterstock, and three Google image hosts). If any URL rots, the card falls back to a placeholder.
+- **Operator details are empty.** `src/lib/legal-config.ts` must be filled in before the site is public; see [Legal configuration](#legal-configuration).
+- **The newsletter field only saves to the browser.** No address is collected and no email is sent.
 
 ## Demo security
 

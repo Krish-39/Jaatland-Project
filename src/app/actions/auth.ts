@@ -65,7 +65,7 @@ export async function registerAction(input: unknown): Promise<AuthResult> {
 
   const user = inserted[0];
   if (!user) {
-    return { ok: false, error: "An account with this email already exists. Please log in instead." };
+    return { ok: false, error: "An account with this email already exists. Please sign in instead." };
   }
 
   await createSession(user.id);

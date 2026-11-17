@@ -52,7 +52,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 
     const email = form.email.trim();
     if (!email || !form.password) {
-      setError("Please enter email and password");
+      setError("Please enter your email address and password");
       return;
     }
 
@@ -95,7 +95,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {isCreateAccount ? "Create Account" : "User Login"}
+            {isCreateAccount ? "Create an account" : "Sign in"}
           </DialogTitle>
           <DialogDescription className="sr-only">
             {isCreateAccount
@@ -167,8 +167,8 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             {isSubmitting
               ? "Please wait…"
               : isCreateAccount
-                ? "Create Account"
-                : "Login"}
+                ? "Create account"
+                : "Sign in"}
           </Button>
 
           <p className="text-center text-xs text-slate-500 dark:text-slate-400">
@@ -190,8 +190,8 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               className="text-sm text-blue-600 hover:underline dark:text-blue-400"
             >
               {isCreateAccount
-                ? "Already have an account? Login"
-                : "Don't have an account? Create one"}
+                ? "Already have an account? Sign in"
+                : "New to Jaatland? Create an account"}
             </button>
           </div>
         </form>

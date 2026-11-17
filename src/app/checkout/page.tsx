@@ -176,12 +176,12 @@ export default function CheckoutPage() {
               </svg>
             </div>
           </div>
-          <h1 className="mb-2 text-2xl font-bold">Order Confirmed!</h1>
+          <h1 className="mb-2 text-2xl font-bold">Order confirmed</h1>
           <p className="mb-4 text-gray-600 dark:text-gray-400">
-            Thank you for your purchase.
+            Thank you for your order.
           </p>
           <p className="mb-8 text-sm text-gray-500">Order ID: {orderId}</p>
-          <Button onClick={() => router.push("/orders")}>View Orders</Button>
+          <Button onClick={() => router.push("/orders")}>View your orders</Button>
         </div>
       </div>
     );
@@ -195,7 +195,7 @@ export default function CheckoutPage() {
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             Add some products to your cart to proceed with checkout.
           </p>
-          <Button onClick={() => router.push("/")}>Continue Shopping</Button>
+          <Button onClick={() => router.push("/")}>Continue shopping</Button>
         </div>
       </div>
     );
@@ -210,7 +210,7 @@ export default function CheckoutPage() {
           className="mb-6 gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Store
+          Back to store
         </Button>
 
         <h1 className="mb-8 text-3xl font-bold">Checkout</h1>

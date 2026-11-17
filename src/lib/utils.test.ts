@@ -23,7 +23,7 @@ describe("getImageUrl", () => {
 
 describe("isAllowedImageSrc", () => {
   it("accepts local files and the allowlisted host", () => {
-    expect(isAllowedImageSrc("/products/classic-tee-1.jpg")).toBe(true);
+    expect(isAllowedImageSrc("/products/crew-neck-t-shirt-1.jpg")).toBe(true);
     expect(isAllowedImageSrc("https://images.unsplash.com/photo-1")).toBe(true);
   });
 

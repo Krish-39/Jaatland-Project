@@ -45,7 +45,7 @@ describe("orders (against an in-memory database)", () => {
     expect(order.subtotal).toBe(24.99);
     expect(order.shippingCost).toBe(4.9);
     expect(order.total).toBe(29.89);
-    expect(order.items[0]).toMatchObject({ id: "p1", name: "Classic Tee", price: 24.99, qty: 1 });
+    expect(order.items[0]).toMatchObject({ id: "p1", name: "Essential Crew-Neck T-Shirt", price: 24.99, qty: 1 });
   });
 
   it("never stores the guest token itself and rejects a wrong token", async () => {

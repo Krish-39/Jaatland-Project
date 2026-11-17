@@ -63,7 +63,7 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
               {newsletterDone ? (
                 <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
                   <Check className="h-5 w-5" />
-                  Saved in this browser. Thanks for trying the demo!
+                  Saved in this browser. Thank you for trying the demo.
                 </div>
               ) : (
                 <form className="space-y-2" onSubmit={subscribe}>
@@ -109,7 +109,7 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
               <span className="font-extrabold">JAATLAND</span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed opacity-70">
-              Everyday basics and statement pieces, released in limited drops.
+              Everyday essentials, designed for comfort and a clean, modern fit.
             </p>
           </div>
 
@@ -142,7 +142,7 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
                   onClick={() => router.push("/orders")}
                   className="transition-opacity hover:opacity-100 hover:underline"
                 >
-                  My Orders
+                  Your orders
                 </button>
               </li>
               <li>
@@ -160,7 +160,7 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
                     onClick={() => void logout()}
                     className="transition-opacity hover:opacity-100 hover:underline"
                   >
-                    Logout
+                    Sign out
                   </button>
                 </li>
               )}

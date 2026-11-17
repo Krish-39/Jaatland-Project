@@ -588,21 +588,21 @@ export function StoreHeader({
                   </div>
                   <DropdownMenuItem onClick={() => router.push("/account")}>
                     <User className="mr-2 h-4 w-4" />
-                    Your Account
+                    Your account
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push("/orders")}>
                     <Package className="mr-2 h-4 w-4" />
-                    Your Orders
+                    Your orders
                   </DropdownMenuItem>
                   {user.role === "admin" && (
                     <DropdownMenuItem onClick={() => router.push("/admin")}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Admin Dashboard
+                      Admin dashboard
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Logout
+                    Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -612,7 +612,7 @@ export function StoreHeader({
                 className="hidden md:inline-flex"
                 onClick={() => setShowLogin(true)}
               >
-                Login
+                Sign in
               </Button>
             )}
           </div>
@@ -720,7 +720,7 @@ export function StoreHeader({
                     }}
                     className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
                   >
-                    <User className="h-4 w-4" /> My Account
+                    <User className="h-4 w-4" /> Your account
                   </button>
                   {user.role === "admin" && (
                     <button
@@ -731,7 +731,7 @@ export function StoreHeader({
                       }}
                       className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
                     >
-                      <Settings className="h-4 w-4" /> Admin Dashboard
+                      <Settings className="h-4 w-4" /> Admin dashboard
                     </button>
                   )}
                   <button
@@ -742,7 +742,7 @@ export function StoreHeader({
                     }}
                     className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
                   >
-                    <Package className="h-4 w-4" /> My Orders
+                    <Package className="h-4 w-4" /> Your orders
                   </button>
                   <button
                     type="button"
@@ -752,7 +752,7 @@ export function StoreHeader({
                     }}
                     className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
                   >
-                    <LogOut className="h-4 w-4" /> Logout
+                    <LogOut className="h-4 w-4" /> Sign out
                   </button>
                 </>
               ) : (
@@ -764,7 +764,7 @@ export function StoreHeader({
                   }}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
                 >
-                  <User className="h-4 w-4" /> Login
+                  <User className="h-4 w-4" /> Sign in
                 </button>
               )}
             </div>

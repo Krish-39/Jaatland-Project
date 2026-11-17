@@ -16,7 +16,7 @@ npm run dev
 
 Open <http://localhost:3000>.
 
-No database setup is needed locally. Without `DATABASE_URL` the app starts an embedded Postgres (PGlite) in `.data/pglite`, applies the migrations and seeds the catalog on first use. Log in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set to reach `/admin`. Delete `.data/` to start from a clean database.
+No database setup is needed locally. Without `DATABASE_URL` the app starts an embedded Postgres (PGlite) in `.data/pglite`, applies the migrations and seeds the catalog on first use. Sign in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set to reach `/admin`. Delete `.data/` to start from a clean database.
 
 ## What you can do
 

@@ -14,10 +14,10 @@ import { readString, writeString } from "@/lib/storage";
 import type { Product } from "@/lib/types";
 
 const CATEGORY_COPY: Record<string, string> = {
-  Men: "Premium wear for the modern man",
-  Women: "Stylish pieces for every occasion",
-  Unisex: "Styles for everyone",
-  Accessories: "Complete your look",
+  Men: "Everyday essentials for men",
+  Women: "Everyday essentials for women",
+  Unisex: "Designed to be worn by everyone",
+  Accessories: "Bags and everyday accessories",
 };
 
 function categoryHeading(category: string) {
@@ -152,7 +152,7 @@ export default function Jaatland() {
                     Featured Products
                   </h2>
                   <p className="mt-1 text-sm opacity-70">
-                    Hand-picked pieces from the latest drop.
+                    A selection from the current collection.
                   </p>
                 </div>
                 <span className="text-sm opacity-70">

@@ -115,7 +115,7 @@ export function AdminPanel({ stats }: { stats: AdminStats }) {
             }}
             className="gap-2"
           >
-            Logout
+            Sign out
           </Button>
         </div>
 
@@ -640,7 +640,7 @@ function ProductForm({
             <Input
               value={formData.badge || ""}
               onChange={(e) => handleBadgeChange(e.target.value)}
-              placeholder="e.g., Bestseller, New"
+              placeholder="e.g. New Arrival, Limited Edition"
             />
           </div>
 

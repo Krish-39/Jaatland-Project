@@ -13,7 +13,7 @@ const validProduct = {
   category: "Unisex",
   color: "White",
   size: ["S", "M"],
-  images: ["/products/classic-tee-1.jpg", "  ", ""],
+  images: ["/products/crew-neck-t-shirt-1.jpg", "  ", ""],
   badge: "",
   similarIds: ["p2"],
 };
@@ -35,7 +35,7 @@ describe("productInputSchema", () => {
   it("trims text, drops empty image rows and empty badges", () => {
     const parsed = productInputSchema.parse(validProduct);
     expect(parsed.name).toBe("Classic Tee");
-    expect(parsed.images).toEqual(["/products/classic-tee-1.jpg"]);
+    expect(parsed.images).toEqual(["/products/crew-neck-t-shirt-1.jpg"]);
     expect(parsed.badge).toBeUndefined();
   });
 

@@ -105,13 +105,13 @@ export default function OrdersPage() {
       <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
-          <h1 className="mb-4 text-2xl font-bold">No Orders Yet</h1>
+          <h1 className="mb-4 text-2xl font-bold">No orders yet</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             {user
               ? "You haven't placed any orders yet."
-              : "No orders from this browser yet. Log in to see orders placed with your account."}
+              : "No orders from this browser yet. Sign in to see orders placed with your account."}
           </p>
-          <Button onClick={() => router.push("/")}>Start Shopping</Button>
+          <Button onClick={() => router.push("/")}>Continue shopping</Button>
         </div>
       </div>
     );
@@ -129,7 +129,7 @@ export default function OrdersPage() {
           Back to Store
         </Button>
 
-        <h1 className="mb-2 text-3xl font-bold">My Orders</h1>
+        <h1 className="mb-2 text-3xl font-bold">Your orders</h1>
         <p className="mb-8 text-sm text-gray-500">
           {user
             ? `Signed in as ${user.email}`

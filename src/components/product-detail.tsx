@@ -94,11 +94,11 @@ export function ProductDetail({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold">Product Not Found</h1>
+          <h1 className="mb-4 text-2xl font-bold">Product not found</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             The product you&apos;re looking for doesn&apos;t exist.
           </p>
-          <Button onClick={() => router.push("/")}>Go to Home</Button>
+          <Button onClick={() => router.push("/")}>Back to store</Button>
         </div>
       </div>
     );

@@ -24,19 +24,19 @@ const geistMono = Geist_Mono({
 });
 
 const SITE_DESCRIPTION =
-  "Everyday basics and statement pieces built for comfort. Tees, hoodies, joggers and accessories from Jaatland Clothing Co. Demo store.";
+  "T-shirts, hoodies, joggers and accessories from Jaatland Clothing Co., designed for comfort and a clean, modern fit. Demo store.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Jaatland — Premium Clothing Co.",
+    default: "Jaatland — Clothing & Accessories",
     template: "%s | Jaatland",
   },
   description: SITE_DESCRIPTION,
   openGraph: {
     type: "website",
     siteName: "Jaatland",
-    title: "Jaatland — Premium Clothing Co.",
+    title: "Jaatland — Clothing & Accessories",
     description: SITE_DESCRIPTION,
     images: ["/products/hero.jpg"],
   },

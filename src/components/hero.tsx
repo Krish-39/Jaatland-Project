@@ -21,7 +21,7 @@ export function Hero({ config }: { config: HomepageConfig }) {
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-4 py-10 md:grid-cols-2 md:gap-12 md:py-16">
         <div className="flex flex-col items-start justify-center">
           <Badge className="w-fit" variant="secondary">
-            <Sparkles className="mr-2 h-4 w-4" /> New Drop
+            <Sparkles className="mr-2 h-4 w-4" /> New Collection
           </Badge>
           <h1 className="mt-4 text-balance text-4xl font-extrabold tracking-tight md:text-5xl">
             {config.heroTitle}
@@ -40,7 +40,7 @@ export function Hero({ config }: { config: HomepageConfig }) {
               variant="outline"
               onClick={() => scrollTo("featured")}
             >
-              View bestsellers
+              View featured products
             </Button>
           </div>
 
@@ -73,9 +73,9 @@ export function Hero({ config }: { config: HomepageConfig }) {
           )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-black/15" />
           <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/90 px-4 py-3 shadow-lg backdrop-blur dark:bg-slate-950/85">
-            <p className="text-sm font-semibold">New season essentials</p>
+            <p className="text-sm font-semibold">New season collection</p>
             <p className="text-xs opacity-70">
-              Tees, hoodies, joggers and accessories in limited drops
+              T-shirts, hoodies, joggers and accessories
             </p>
           </div>
         </div>

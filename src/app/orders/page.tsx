@@ -76,7 +76,7 @@ export default function OrdersPage() {
 
   if (!isLoaded || !ordersLoaded) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="flex min-h-[60vh] items-center justify-center bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div
           role="status"
           aria-live="polite"
@@ -91,7 +91,7 @@ export default function OrdersPage() {
 
   if (showcase) {
     return (
-      <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <h1 className="mb-4 text-2xl font-bold">Your orders</h1>
           <ShowcaseNotice className="mb-6 text-left" />
@@ -103,7 +103,7 @@ export default function OrdersPage() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <h1 className="mb-4 text-2xl font-bold">Could not load your orders</h1>
           <p role="alert" className="mb-6 text-gray-600 dark:text-gray-400">
@@ -117,7 +117,7 @@ export default function OrdersPage() {
 
   if (userOrders.length === 0) {
     return (
-      <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
           <h1 className="mb-4 text-2xl font-bold">No orders yet</h1>
@@ -133,7 +133,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-4xl px-4 py-8">
         <Button
           variant="ghost"

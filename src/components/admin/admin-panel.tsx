@@ -98,7 +98,7 @@ export function AdminPanel({ stats }: { stats: AdminStats }) {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+    <div className="min-h-[60vh] bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-8">
         <Button variant="ghost" onClick={() => router.push("/")} className="mb-6 gap-2">
           <ArrowLeft className="h-4 w-4" />

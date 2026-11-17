@@ -11,7 +11,7 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
       <Shirt className="h-10 w-10" />
       <h1 className="text-3xl font-bold">Something went wrong</h1>
       <p className="max-w-sm text-sm opacity-70">

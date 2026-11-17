@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { DemoBanner } from "@/components/demo-banner";
+import { FiltersProvider } from "@/components/filters-provider";
+import { StoreFooter } from "@/components/store-footer";
+import { StoreHeader } from "@/components/store-header";
 import { LegalBar } from "@/components/legal-bar";
 import { StoreProvider } from "@/components/store-provider";
 import { isShowcaseMode } from "@/db/url";
@@ -81,7 +84,11 @@ export default async function RootLayout({
           showcase={showcase}
           payments={payments}
         >
-          <div id="main-content">{children}</div>
+          <FiltersProvider>
+            <StoreHeader />
+            <div id="main-content">{children}</div>
+            <StoreFooter />
+          </FiltersProvider>
         </StoreProvider>
         <LegalBar />
       </body>

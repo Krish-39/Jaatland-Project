@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useFilters } from "@/components/filters-provider";
 import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +42,8 @@ import {
   Truck,
   Trash2,
 } from "lucide-react";
-import { CATEGORIES, SIZES, COLORS } from "@/lib/mock-data";
+import { CATEGORIES, SIZES, COLORS, LS_KEYS } from "@/lib/mock-data";
+import { readString, writeString } from "@/lib/storage";
 import {
   FREE_SHIPPING_THRESHOLD,
   orderTotalFor,
@@ -99,18 +101,48 @@ function FilterCheckboxGroup({
   );
 }
 
-interface StoreHeaderProps {
-  filters: ProductFilters;
-  dark: boolean;
-  onToggleDark: () => void;
-}
-
-export function StoreHeader({
-  filters,
-  dark,
-  onToggleDark,
-}: StoreHeaderProps) {
+/** The shop's top bar: rendered once in the root layout, on every page. */
+export function StoreHeader() {
   const router = useRouter();
+  const pathname = usePathname();
+  const sharedFilters = useFilters();
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    setDark(readString(LS_KEYS.THEME) === "dark");
+  }, []);
+
+  const onToggleDark = () => {
+    setDark((previous) => {
+      const next = !previous;
+      document.documentElement.classList.toggle("dark", next);
+      writeString(LS_KEYS.THEME, next ? "dark" : "light");
+      return next;
+    });
+  };
+
+  // Results are shown on the homepage. Using search, a category, a filter or
+  // sort on any other page applies it and takes the visitor there.
+  const filters = useMemo<ProductFilters>(() => {
+    if (pathname === "/") return sharedFilters;
+    const toListing = () => router.push("/#products");
+    const wrap =
+      <A extends unknown[]>(fn: (...args: A) => void) =>
+      (...args: A) => {
+        fn(...args);
+        toListing();
+      };
+    return {
+      ...sharedFilters,
+      setQuery: wrap(sharedFilters.setQuery),
+      setCategory: wrap(sharedFilters.setCategory),
+      setSizeFilters: wrap(sharedFilters.setSizeFilters),
+      setColorFilters: wrap(sharedFilters.setColorFilters),
+      setSort: wrap(sharedFilters.setSort),
+      setPriceRange: wrap(sharedFilters.setPriceRange),
+      clearFilters: wrap(sharedFilters.clearFilters),
+    };
+  }, [pathname, router, sharedFilters]);
   const {
     products,
     cart,
@@ -139,8 +171,9 @@ export function StoreHeader({
   );
 
   const goHome = () => {
-    filters.setCategory(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    sharedFilters.setCategory(null);
+    if (pathname !== "/") router.push("/");
+    else window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const selectCategory = (category: string) => {
@@ -356,10 +389,10 @@ export function StoreHeader({
                 </Button>
               </SheetTrigger>
               <SheetContent
-                className="w-full overflow-y-auto sm:max-w-[480px]"
+                className="w-full overflow-y-auto px-4 pb-6 sm:max-w-[480px]"
                 description="Items you have saved for later"
               >
-                <SheetHeader>
+                <SheetHeader className="px-0">
                   <SheetTitle>Your Wishlist</SheetTitle>
                 </SheetHeader>
                 <div className="mt-4 space-y-4">
@@ -432,10 +465,10 @@ export function StoreHeader({
                 </Button>
               </SheetTrigger>
               <SheetContent
-                className="flex w-full flex-col overflow-hidden sm:max-w-[480px]"
+                className="flex w-full flex-col overflow-hidden px-4 pb-6 sm:max-w-[480px]"
                 description="Review the items in your cart before checkout"
               >
-                <SheetHeader>
+                <SheetHeader className="px-0">
                   <SheetTitle>Your Cart</SheetTitle>
                 </SheetHeader>
                 <div className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
@@ -622,10 +655,10 @@ export function StoreHeader({
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent
           side="left"
-          className="w-[320px] overflow-y-auto sm:max-w-[360px]"
+          className="w-[320px] overflow-y-auto px-4 pb-6 sm:max-w-[360px]"
           description="Browse categories, filters, and your account"
         >
-          <SheetHeader>
+          <SheetHeader className="px-0">
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-6">

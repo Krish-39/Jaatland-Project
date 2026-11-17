@@ -9,13 +9,12 @@ import { Input } from "@/components/ui/input";
 import { LEGAL_LINKS } from "@/lib/legal-config";
 import { CATEGORIES, LS_KEYS } from "@/lib/mock-data";
 import { writeString } from "@/lib/storage";
+import { useFilters } from "@/components/filters-provider";
 import { useStore } from "@/components/store-provider";
 
-interface StoreFooterProps {
-  onSelectCategory: (category: string) => void;
-}
-
-export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
+/** The shop's footer: rendered once in the root layout, on every page. */
+export function StoreFooter() {
+  const { setCategory } = useFilters();
   const router = useRouter();
   const { homepageConfig, user, logout } = useStore();
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -121,8 +120,8 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      onSelectCategory(category);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      setCategory(category);
+                      router.push("/#products");
                     }}
                     className="transition-opacity hover:opacity-100 hover:underline"
                   >

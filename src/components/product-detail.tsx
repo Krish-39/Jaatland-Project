@@ -92,7 +92,7 @@ export function ProductDetail({ id }: { id: string }) {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <h1 className="mb-4 text-2xl font-bold">Product not found</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
@@ -112,7 +112,7 @@ export function ProductDetail({ id }: { id: string }) {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-8">
         <Button variant="ghost" onClick={() => router.back()} className="mb-6 gap-2">
           <ArrowLeft className="h-4 w-4" />

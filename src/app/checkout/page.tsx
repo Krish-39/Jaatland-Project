@@ -142,7 +142,7 @@ export default function CheckoutPage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="flex min-h-[60vh] items-center justify-center bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div
           role="status"
           aria-live="polite"
@@ -157,7 +157,7 @@ export default function CheckoutPage() {
 
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <div className="mb-6 flex justify-center">
             <div className="rounded-full bg-green-100 p-4 dark:bg-green-900">
@@ -189,7 +189,7 @@ export default function CheckoutPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <h1 className="mb-4 text-2xl font-bold">Your cart is empty</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
@@ -202,7 +202,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-8">
         <Button
           variant="ghost"

@@ -1,16 +1,13 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { X as XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hero } from "@/components/hero";
 import { ProductGrid } from "@/components/product-card";
-import { StoreFooter } from "@/components/store-footer";
-import { StoreHeader } from "@/components/store-header";
 import { useStore } from "@/components/store-provider";
-import { useProductFilters } from "@/hooks/use-product-filters";
-import { CATEGORIES, LS_KEYS } from "@/lib/mock-data";
-import { readString, writeString } from "@/lib/storage";
+import { useFilters } from "@/components/filters-provider";
+import { CATEGORIES } from "@/lib/mock-data";
 import type { Product } from "@/lib/types";
 
 const CATEGORY_COPY: Record<string, string> = {
@@ -30,27 +27,12 @@ export default function Jaatland() {
   const {
     products,
     homepageConfig,
-    isLoaded,
     cart,
     wishlist,
     addToCart,
     toggleWishlist,
   } = useStore();
-  const filters = useProductFilters(products, isLoaded);
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    setDark(readString(LS_KEYS.THEME) === "dark");
-  }, []);
-
-  const toggleDark = () => {
-    setDark((previous) => {
-      const next = !previous;
-      document.documentElement.classList.toggle("dark", next);
-      writeString(LS_KEYS.THEME, next ? "dark" : "light");
-      return next;
-    });
-  };
+  const filters = useFilters();
 
   const handleAddToCart = (id: string) => {
     const product = products.find((candidate) => candidate.id === id);
@@ -99,8 +81,7 @@ export default function Jaatland() {
       : "Filtered products";
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-      <StoreHeader filters={filters} dark={dark} onToggleDark={toggleDark} />
+    <div className="min-h-[60vh] bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
 
       {!filters.hasActiveFilters && <Hero config={homepageConfig} />}
 
@@ -209,7 +190,6 @@ export default function Jaatland() {
         )}
       </main>
 
-      <StoreFooter onSelectCategory={filters.setCategory} />
     </div>
   );
 }

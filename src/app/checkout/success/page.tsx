@@ -61,7 +61,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   }[outcome];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       {(outcome === "paid" || outcome === "processing") && <ClearCartOnMount />}
       <main className="mx-auto max-w-md px-4 py-16 text-center">
         <div className="mb-6 flex justify-center">{view.icon}</div>

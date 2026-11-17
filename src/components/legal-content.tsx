@@ -48,7 +48,8 @@ export function DemoNotice() {
   return (
     <p className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
       <strong>This website is a demonstration.</strong> No goods are sold, no
-      contract is concluded when an order is placed, no payment is taken and
+      contract is concluded when an order is placed, no real payment is taken
+      (payments run in Stripe test mode) and
       nothing is shipped.
     </p>
   );

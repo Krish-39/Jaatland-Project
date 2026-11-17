@@ -28,6 +28,8 @@ function statusClasses(status: Order["status"]) {
   switch (String(status).toLowerCase()) {
     case "pending":
       return "bg-amber-500 text-white";
+    case "paid":
+      return "bg-green-600 text-white";
     case "processing":
       return "bg-blue-600 text-white";
     case "shipped":

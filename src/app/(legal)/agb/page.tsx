@@ -29,7 +29,8 @@ export default function TermsPage() {
           This website demonstrates how an online shop works. The products
           shown are examples and are not offered for sale. Completing the
           checkout does not constitute a binding offer or an acceptance, no
-          purchase contract is concluded, no payment is collected and no goods
+          purchase contract is concluded, no real payment is collected (payments
+          run in Stripe&apos;s test mode) and no goods
           are delivered. The order confirmation shown after checkout is part of
           the demonstration.
         </p>
@@ -69,7 +70,9 @@ export default function TermsPage() {
 
       <LegalSection heading="6. Payment and retention of title">
         <p>
-          The payment methods available are shown at checkout. The goods remain
+          Payment is made by card through our payment service provider Stripe,
+          on Stripe&apos;s payment page. In this demonstration Stripe runs in
+          test mode and no real money is charged. The goods remain
           our property until they have been paid for in full.
         </p>
       </LegalSection>

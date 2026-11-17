@@ -37,7 +37,7 @@ No database setup is needed locally. Without `DATABASE_URL` the app starts an em
 - Shipping form (Germany only) and an order summary repeated directly above the **Order with obligation to pay** button.
 - Orders are created on the server and priced from the database; the browser only sends product ids, sizes and quantities.
 - Signed-in customers see their orders in their account. Guests get a private token, kept in their browser, that lets that browser show the order again.
-- Payment is simulated: the card is never charged, transmitted or stored. Demo orders are deleted after 30 days.
+- With `STRIPE_SECRET_KEY` set, the buyer pays on **Stripe Checkout in test mode** (test card `4242 4242 4242 4242`). Card details never touch this site. Without a key, orders are placed without a payment step. Demo orders are deleted after 30 days.
 
 **Admin** (`/admin`, admin accounts only)
 
@@ -84,6 +84,12 @@ The root layout (`src/app/layout.tsx`) reads products and homepage copy through 
 
 `placeOrderAction` (`src/app/actions/orders.ts`) validates the form, loads the catalog from the database and builds the order in `src/lib/data/orders.ts`: every line must be an existing product in a size it is sold in, and item prices, shipping and total are computed on the server. Line items are stored as a snapshot, so later catalog edits never change an order. Guest orders are readable only with their token (stored hashed); an order id alone is not enough.
 
+### Payments
+
+`placeOrderAction` stores the order first, then creates a Stripe Checkout Session from the stored order (`src/lib/payments/checkout-session.ts`) and sends the buyer to Stripe. The order becomes `paid` when either the success page or the webhook confirms the session with Stripe (`src/lib/payments/confirm.ts`); both paths are idempotent, and a session can only pay the order it was created for. Cancelling on Stripe returns to checkout with the cart intact.
+
+To record payments the buyer never returns from, and to cancel expired sessions, add a webhook in Stripe (Developers → Webhooks) for `https://<your-domain>/api/stripe/webhook` with the events `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` and `checkout.session.expired`, and put its signing secret in `STRIPE_WEBHOOK_SECRET`.
+
 ### Browser storage
 
 Only per-browser convenience state lives in `localStorage` (keys prefixed `jaatland_`): cart, wishlist, theme, sort, price filter, guest order tokens, last checkout email and the newsletter field. Reads and writes go through `src/lib/storage.ts`, which tolerates corrupt or unavailable storage. Keys from earlier builds (local accounts, the client-side admin flag, catalog overrides) are deleted on load.
@@ -108,7 +114,9 @@ Only per-browser convenience state lives in `localStorage` (keys prefixed `jaatl
 | --- | --- |
 | `DATABASE_URL` | Postgres connection string (Neon; `POSTGRES_URL` is accepted too). Without it, Vercel deploys run in showcase mode; locally the embedded database is used |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Admin account, created or updated by `db:migrate` |
-| `STRIPE_SECRET_KEY` | Test-mode key for `POST /api/create-payment-intent` (not yet used by the UI) |
+| `STRIPE_SECRET_KEY` | Stripe **test** secret key (`sk_test_…`). Live keys and publishable keys (`pk_…`) are refused and payments stay off |
+| `STRIPE_WEBHOOK_SECRET` | Optional signing secret (`whsec_…`) for `/api/stripe/webhook`; needed to record delayed payments and expired sessions |
+| `STRIPE_API_URL` | Testing only: point at a local Stripe stand-in such as stripe-mock (localhost only) |
 
 ### Routes
 
@@ -123,7 +131,8 @@ Only per-browser convenience state lives in `localStorage` (keys prefixed `jaatl
 | `/impressum`, `/datenschutz`, `/agb`, `/widerruf`, `/versand-zahlung` | Legal pages |
 | `GET /api/auth/session` | Who is signed in |
 | `GET /api/account/export` | The signed-in user's data as JSON |
-| `POST /api/create-payment-intent` | Stripe PaymentIntent priced on the server, rate-limited |
+| `/checkout/success` | Return page after Stripe; confirms the payment with Stripe before showing it |
+| `POST /api/stripe/webhook` | Signed Stripe events: payment completed, async payment result, session expired |
 
 ### Project layout
 
@@ -181,7 +190,7 @@ Unit tests cover order maths, shipping, storage, rate limiting, validation and p
 
 - **Showcase mode on Vercel** until a database is connected (see [Deploying to Vercel](#deploying-to-vercel)).
 - **Operator details are empty** until `src/lib/legal-config.ts` is filled in.
-- **Payment is simulated.** Orders are stored with status `pending` and no payment provider is called. Wiring the checkout to Stripe (test mode) with a webhook is the next step.
+- **Abandoned payments stay `pending`** until Stripe reports the session expired, which needs the webhook to be configured.
 - **No order emails.** Confirmation emails need an email provider.
 - **The newsletter field only saves to the browser.** No address is collected and no email is sent.
 - **Rate limits are per server instance** (in memory). A shared store such as Upstash Redis would make them global.

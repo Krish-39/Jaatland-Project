@@ -4,6 +4,7 @@ import { DemoBanner } from "@/components/demo-banner";
 import { LegalBar } from "@/components/legal-bar";
 import { StoreProvider } from "@/components/store-provider";
 import { isShowcaseMode } from "@/db/url";
+import { paymentsEnabled } from "@/lib/payments/stripe";
 import { getHomepageConfig, getProducts } from "@/lib/data/catalog";
 import { SITE_URL } from "@/lib/legal-config";
 import "./globals.css";
@@ -57,6 +58,7 @@ export default async function RootLayout({
     getHomepageConfig(),
   ]);
   const showcase = isShowcaseMode();
+  const payments = !showcase && paymentsEnabled();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -77,6 +79,7 @@ export default async function RootLayout({
           products={products}
           homepageConfig={homepageConfig}
           showcase={showcase}
+          payments={payments}
         >
           <div id="main-content">{children}</div>
         </StoreProvider>

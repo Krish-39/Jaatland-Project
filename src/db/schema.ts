@@ -78,6 +78,9 @@ export const orders = pgTable("orders", {
   shippingCity: text("shipping_city").notNull(),
   shippingZip: text("shipping_zip").notNull(),
   shippingCountry: text("shipping_country").notNull(),
+  /** Stripe Checkout Session that pays for this order, once one is started. */
+  stripeSessionId: text("stripe_session_id").unique(),
+  paidAt: timestamp("paid_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

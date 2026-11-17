@@ -19,21 +19,10 @@ import { useStore } from "@/components/store-provider";
 
 const LS = LS_KEYS;
 
-function formatCardNumber(value: string) {
-  return value
-    .replace(/\D/g, "")
-    .slice(0, 16)
-    .replace(/(\d{4})(?=\d)/g, "$1 ");
-}
-
-function formatExpiry(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 4);
-  return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
-}
-
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, products, clearCart, isLoaded, user, showcase } = useStore();
+  const { cart, products, clearCart, isLoaded, user, showcase, payments } =
+    useStore();
   const [form, setForm] = useState({
     email: "",
     name: "",
@@ -41,14 +30,20 @@ export default function CheckoutPage() {
     city: "",
     zip: "",
     country: "Germany",
-    cardNumber: "",
-    expiry: "",
-    cvc: "",
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [paymentCancelled, setPaymentCancelled] = useState(false);
+
+  // Stripe sends the buyer back with ?payment=cancelled when they leave the
+  // payment page. The cart is untouched, so they can simply try again.
+  useEffect(() => {
+    setPaymentCancelled(
+      new URLSearchParams(window.location.search).get("payment") === "cancelled"
+    );
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -85,13 +80,7 @@ export default function CheckoutPage() {
   const grandTotal = orderTotalFor(total);
 
   const handleChange = (field: string, value: string) => {
-    let next = value;
-
-    if (field === "cardNumber") next = formatCardNumber(value);
-    if (field === "expiry") next = formatExpiry(value);
-    if (field === "cvc") next = value.replace(/\D/g, "").slice(0, 4);
-
-    setForm((prev) => ({ ...prev, [field]: next }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -104,7 +93,8 @@ export default function CheckoutPage() {
     try {
       const email = form.email.trim();
       // The server looks up every product and computes the prices itself;
-      // only ids, sizes and quantities are sent. Card fields are never sent.
+      // only ids, sizes and quantities are sent. Card details are entered on
+      // Stripe's own payment page and never reach this site.
       const result = await placeOrderAction({
         email,
         name: form.name,
@@ -116,6 +106,7 @@ export default function CheckoutPage() {
 
       if (!result.ok) {
         setSubmitError(result.error);
+        setIsProcessing(false);
         return;
       }
 
@@ -129,14 +120,22 @@ export default function CheckoutPage() {
       }
       writeJson(LS.BUYER_EMAIL, email);
 
+      if (result.paymentUrl) {
+        // Hand over to Stripe Checkout. The cart is cleared on the success
+        // page, once the payment is confirmed, so cancelling keeps it.
+        // The button stays in its "processing" state while the browser leaves.
+        window.location.assign(result.paymentUrl);
+        return;
+      }
+
       clearCart();
 
       setOrderId(result.orderId);
       setOrderPlaced(true);
+      setIsProcessing(false);
     } catch (error) {
       console.error(error);
       setSubmitError("Something went wrong placing your order. Please try again.");
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -326,65 +325,28 @@ export default function CheckoutPage() {
                   <CreditCard className="h-5 w-5" />
                   Payment
                 </h2>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input
-                      id="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      inputMode="numeric"
-                      autoComplete="cc-number"
-                      maxLength={19}
-                      value={form.cardNumber}
-                      onChange={(event) =>
-                        handleChange("cardNumber", event.target.value)
-                      }
-                      required
-                    />
+                {payments ? (
+                  <div className="space-y-3 text-sm">
+                    <p>
+                      After you place the order you are taken to Stripe&apos;s
+                      secure payment page to pay by card. Card details are
+                      entered there and never reach this site.
+                    </p>
+                    <p className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
+                      <span className="font-medium">Stripe test mode:</span> no
+                      real money is charged and nothing is shipped. Pay with the
+                      test card <code>4242 4242 4242 4242</code>, any future
+                      expiry date and any CVC. Do not enter a real card.
+                    </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="expiry">Expiry Date</Label>
-                      <Input
-                        id="expiry"
-                        placeholder="MM/YY"
-                        inputMode="numeric"
-                        autoComplete="cc-exp"
-                        maxLength={5}
-                        value={form.expiry}
-                        onChange={(event) =>
-                          handleChange("expiry", event.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="cvc">CVC</Label>
-                      <Input
-                        id="cvc"
-                        placeholder="123"
-                        inputMode="numeric"
-                        autoComplete="cc-csc"
-                        maxLength={4}
-                        value={form.cvc}
-                        onChange={(event) =>
-                          handleChange("cvc", event.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
+                ) : (
+                  <p className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
+                    <span className="font-medium">Demo checkout:</span> payment
+                    is not connected in this deployment, so the order is placed
+                    without a payment step. Nothing is charged or shipped.
+                  </p>
+                )}
               </section>
-
-              <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
-                <span className="font-medium">
-                  Demo checkout — no payment is processed and nothing is
-                  shipped.
-                </span>{" "}
-                Don&apos;t enter real card details; nothing is charged or sent
-                anywhere.
-              </div>
 
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 Our{" "}
@@ -455,6 +417,16 @@ export default function CheckoutPage() {
 
               {showcase && <ShowcaseNotice />}
 
+              {paymentCancelled && !submitError && (
+                <p
+                  role="status"
+                  className="rounded-lg border p-3 text-sm text-slate-700 dark:text-slate-300"
+                >
+                  Payment was cancelled and nothing was charged. Your cart is
+                  unchanged, so you can try again.
+                </p>
+              )}
+
               <Button
                 type="submit"
                 className="w-full"
@@ -462,7 +434,9 @@ export default function CheckoutPage() {
                 disabled={isProcessing || showcase}
               >
                 {isProcessing
-                  ? "Placing order..."
+                  ? payments
+                    ? "Opening secure payment…"
+                    : "Placing order…"
                   : `Order with obligation to pay · ${formatCurrency(grandTotal)}`}
               </Button>
             </form>
@@ -539,7 +513,9 @@ export default function CheckoutPage() {
               <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
                 <ShieldCheck className="h-4 w-4" />
                 <span>
-                  Demo store — card details are never stored or transmitted
+                  {payments
+                    ? "Payments by Stripe (test mode)"
+                    : "Demo store: no payment is taken"}
                 </span>
               </div>
             </div>

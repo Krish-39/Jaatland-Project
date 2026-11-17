@@ -41,7 +41,8 @@ export default function PrivacyPolicyPage() {
           </li>
           <li>
             If you place a demo order, we store the order with your name, email
-            address and delivery address for 30 days, then delete it.
+            address and delivery address for 30 days, then delete it. Test
+            payments are handled by Stripe on its own payment page.
           </li>
           <li>
             Your cart, wishlist and display preferences are stored only in your
@@ -159,10 +160,41 @@ export default function PrivacyPolicyPage() {
           placed, and immediately when you delete your account. Orders are
           stored in the same database as account data (see section 4).
         </p>
+        <p>Please do not enter data of other people.</p>
+      </LegalSection>
+
+      <LegalSection heading="7a. Payment processing by Stripe">
         <p>
-          Please do not enter data of other people. Payment is simulated: the
-          card details you type into the checkout form are not transmitted and
-          not stored, and no payment provider receives any data from this site.
+          Where payment is enabled, you pay on a payment page operated by
+          Stripe Payments Europe, Ltd., 1 Grand Canal Street Lower, Grand Canal
+          Dock, Dublin, D02 H210, Ireland (&quot;Stripe&quot;). The payment runs
+          in Stripe&apos;s test mode: no real money is charged, and only Stripe
+          test cards are accepted.
+        </p>
+        <p>
+          To start the payment we send Stripe the order number, the items with
+          their prices, the shipping cost and your email address. You enter
+          your payment details directly on Stripe&apos;s page; they never reach
+          this site. Stripe tells us whether the payment succeeded, and we store
+          that result and Stripe&apos;s session reference with the order. The
+          legal basis is the performance of the contract (Art. 6 (1) (b) GDPR).
+        </p>
+        <p>
+          Stripe processes payment data as an independent controller, partly
+          in the USA; transfers are covered by the EU-U.S. Data Privacy
+          Framework and the EU Standard Contractual Clauses. Details:{" "}
+          <a
+            href="https://stripe.com/privacy"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            stripe.com/privacy
+          </a>
+          .
+        </p>
+        <p>
+          Where payment is not enabled, checkout places the order without a
+          payment step and no payment provider receives any data.
         </p>
       </LegalSection>
 

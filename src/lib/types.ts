@@ -33,6 +33,7 @@ export interface OrderItem {
 
 export type OrderStatus =
   | 'pending'
+  | 'paid'
   | 'processing'
   | 'shipped'
   | 'completed'

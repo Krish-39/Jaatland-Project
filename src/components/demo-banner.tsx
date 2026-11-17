@@ -7,7 +7,7 @@ export function DemoBanner({ showcase = false }: { showcase?: boolean }) {
       className="bg-slate-900 px-4 py-1.5 text-center text-xs text-white dark:bg-slate-100 dark:text-slate-900"
     >
       <strong className="font-semibold">Demo store.</strong> Orders are not
-      fulfilled and no payment is taken.
+      fulfilled and no real payment is taken.
       {showcase && " Sign-in and checkout are switched off in this deployment."}
     </div>
   );

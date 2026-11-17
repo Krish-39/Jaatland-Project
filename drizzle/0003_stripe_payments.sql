@@ -1,0 +1,3 @@
+ALTER TABLE "orders" ADD COLUMN "stripe_session_id" text;--> statement-breakpoint
+ALTER TABLE "orders" ADD COLUMN "paid_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "orders" ADD CONSTRAINT "orders_stripe_session_id_unique" UNIQUE("stripe_session_id");

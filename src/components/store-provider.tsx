@@ -27,6 +27,8 @@ interface StoreContextValue {
   isLoaded: boolean;
   /** No database in this deployment: accounts, admin and checkout are off. */
   showcase: boolean;
+  /** Stripe (test mode) is configured: checkout hands over to Stripe. */
+  payments: boolean;
 
   /** Catalog and homepage copy, rendered on the server from the database. */
   products: Product[];
@@ -58,6 +60,7 @@ interface StoreProviderProps {
   products: Product[];
   homepageConfig: HomepageConfig;
   showcase?: boolean;
+  payments?: boolean;
   children: React.ReactNode;
 }
 
@@ -65,6 +68,7 @@ export function StoreProvider({
   products,
   homepageConfig,
   showcase = false,
+  payments = false,
   children,
 }: StoreProviderProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -204,6 +208,7 @@ export function StoreProvider({
     () => ({
       isLoaded,
       showcase,
+      payments,
       products,
       homepageConfig,
       cart,
@@ -223,6 +228,7 @@ export function StoreProvider({
     [
       isLoaded,
       showcase,
+      payments,
       products,
       homepageConfig,
       cart,

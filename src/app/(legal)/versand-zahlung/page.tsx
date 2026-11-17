@@ -55,9 +55,12 @@ export default function ShippingPaymentPage() {
 
       <LegalSection heading="Payment">
         <p>
-          Checkout is simulated. No payment method is charged and card details
-          entered in the form are neither transmitted nor stored. Please do not
-          enter real card details.
+          Payment by card is handled by Stripe on its own secure payment page,
+          which opens after you place your order. Payments run in Stripe&apos;s
+          test mode: no real money is charged, and only Stripe test cards (for
+          example 4242 4242 4242 4242) are accepted. Please never enter a real
+          card. Where payment is not enabled, the order is placed without a
+          payment step.
         </p>
       </LegalSection>
     </LegalArticle>

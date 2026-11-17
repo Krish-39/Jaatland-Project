@@ -169,3 +169,50 @@ export async function getOrderStats(): Promise<Omit<AdminStats, "productCount">>
     }),
   };
 }
+
+/** Internal lookup by id, for payment handling only. Never expose the result
+ * to a visitor without first checking they own the order. */
+export async function getOrderRow(id: string): Promise<OrderRow | null> {
+  const db = await getDb();
+  const [row] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+  return row ?? null;
+}
+
+export async function attachStripeSession(orderId: string, sessionId: string): Promise<void> {
+  const db = await getDb();
+  await db.update(orders).set({ stripeSessionId: sessionId }).where(eq(orders.id, orderId));
+}
+
+/**
+ * Marks the order paid by the given Checkout Session. Idempotent: the
+ * success page and the webhook may both report the same payment. Returns
+ * false when the session does not belong to this order.
+ */
+export async function markOrderPaid(orderId: string, sessionId: string): Promise<boolean> {
+  const db = await getDb();
+  const [row] = await db
+    .select({ status: orders.status, stripeSessionId: orders.stripeSessionId })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
+
+  if (!row || row.stripeSessionId !== sessionId) return false;
+  if (row.status === "pending" || row.status === "cancelled") {
+    await db
+      .update(orders)
+      .set({ status: "paid", paidAt: new Date() })
+      .where(and(eq(orders.id, orderId), eq(orders.stripeSessionId, sessionId)));
+  }
+  return true;
+}
+
+/** An unpaid order whose payment session expired or failed. */
+export async function markOrderCancelled(orderId: string, sessionId: string): Promise<void> {
+  const db = await getDb();
+  await db
+    .update(orders)
+    .set({ status: "cancelled" })
+    .where(
+      and(eq(orders.id, orderId), eq(orders.stripeSessionId, sessionId), eq(orders.status, "pending"))
+    );
+}

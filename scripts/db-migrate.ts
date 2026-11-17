@@ -6,9 +6,16 @@ import { migrate } from "drizzle-orm/neon-http/migrator";
 import path from "node:path";
 import * as schema from "../src/db/schema";
 import { seedDatabase, type Db } from "../src/db/seed";
+import { databaseUrl, MISSING_DATABASE_MESSAGE } from "../src/db/url";
 
 async function main() {
-  const url = process.env.DATABASE_URL;
+  const url = databaseUrl();
+  if (!url && process.env.VERCEL) {
+    // Stop before the build with instructions, instead of failing later
+    // inside `next build` with a stack trace.
+    console.error(`\n[db] ${MISSING_DATABASE_MESSAGE.replace(/\n/g, "\n[db] ")}\n`);
+    process.exit(1);
+  }
   if (!url) {
     console.log("[db] DATABASE_URL is not set; skipping migrations (embedded database is used).");
     return;

@@ -2,6 +2,7 @@ import "server-only";
 import path from "node:path";
 import { seedDatabase, type Db } from "./seed";
 import * as schema from "./schema";
+import { databaseUrl, MISSING_DATABASE_MESSAGE } from "./url";
 
 export type { Db };
 
@@ -14,7 +15,7 @@ export function getDb(): Promise<Db> {
 }
 
 async function connect(): Promise<Db> {
-  const url = process.env.DATABASE_URL;
+  const url = databaseUrl();
 
   if (url) {
     const [{ neon }, { drizzle }] = await Promise.all([
@@ -25,9 +26,7 @@ async function connect(): Promise<Db> {
   }
 
   if (process.env.VERCEL) {
-    throw new Error(
-      "DATABASE_URL is not set. Add a Postgres database (for example the Neon integration) in the Vercel project settings."
-    );
+    throw new Error(MISSING_DATABASE_MESSAGE);
   }
 
   return connectLocal();

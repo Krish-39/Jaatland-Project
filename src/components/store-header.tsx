@@ -184,45 +184,38 @@ export function StoreHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/65 dark:border-slate-800 dark:bg-slate-950/75">
+      <header className="sticky top-0 z-40 w-full border-b-2 border-ink bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
+              onClick={goHome}
               aria-label="Jaatland home"
-              onClick={goHome}
-              className="rounded-md p-1 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="group flex items-center gap-2 rounded-full py-1 pr-2"
             >
-              <Shirt className="h-6 w-6" />
-            </button>
-            <button
-              type="button"
-              onClick={goHome}
-              className="rounded-md py-1 text-left"
-            >
-              <span className="whitespace-nowrap text-xl font-extrabold tracking-tight">
-                JAATLAND
+              <span className="grid size-9 place-items-center rounded-full border-2 border-ink bg-brand text-[#1a1815] transition-transform duration-300 group-hover:-rotate-12">
+                <Shirt className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="font-display whitespace-nowrap text-[1.7rem] leading-none max-[359px]:sr-only">
+                Jaatland
               </span>
             </button>
-            <Badge
-              className="ml-1 hidden shrink-0 sm:inline-flex"
-              variant="secondary"
-            >
+            <span className="sticker hidden shrink-0 2xl:inline-flex">
               Clothing Co.
-            </Badge>
+            </span>
           </div>
 
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center gap-1 xl:flex" aria-label="Categories">
             {CATEGORIES.map((category) => (
               <button
                 key={category}
                 type="button"
                 onClick={() => selectCategory(category)}
                 aria-pressed={filters.category === category}
-                className={`relative text-sm font-medium transition-colors hover:text-slate-950 dark:hover:text-white ${
+                className={`rounded-full border-2 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
                   filters.category === category
-                    ? "text-slate-950 after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-current dark:text-white"
-                    : "text-slate-600 dark:text-slate-300"
+                    ? "border-ink bg-ink text-background"
+                    : "border-transparent text-foreground hover:border-ink"
                 }`}
               >
                 {category}
@@ -234,14 +227,14 @@ export function StoreHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="xl:hidden"
               aria-label="Open menu"
               onClick={() => setMobileMenuOpen(true)}
             >
               <Menu className="h-5 w-5" />
             </Button>
 
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-center gap-2 lg:flex">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 opacity-60" />
                 <Input
@@ -370,8 +363,8 @@ export function StoreHeader() {
                 <Button
                   size="icon"
                   variant="outline"
-                  aria-label={`Open wishlist${
-                    wishlist.length ? ` (${wishlist.length} items)` : ""
+                  aria-label={`Wishlist, ${wishlist.length} ${
+                    wishlist.length === 1 ? "item" : "items"
                   }`}
                   className="relative"
                 >
@@ -450,17 +443,17 @@ export function StoreHeader() {
                 <Button
                   size="icon"
                   variant="outline"
-                  aria-label={`Open cart${cartCount ? ` (${cartCount} items)` : ""}`}
+                  aria-label={`Cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}`}
                   className="relative"
                 >
                   <ShoppingCart className="h-5 w-5" />
                   {cartCount > 0 && (
-                    <Badge
-                      variant="destructive"
-                      className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center p-0 text-xs"
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full border-2 border-ink bg-brand px-1 text-[0.65rem] font-bold text-[#1a1815]"
                     >
                       {cartCount}
-                    </Badge>
+                    </span>
                   )}
                 </Button>
               </SheetTrigger>
@@ -533,7 +526,7 @@ export function StoreHeader() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="ml-1 h-7 w-7 text-slate-500"
+                              className="ml-1 h-7 w-7 text-muted-foreground"
                               onClick={() =>
                                 updateQty(item.id, -item.qty, item.size)
                               }
@@ -642,7 +635,7 @@ export function StoreHeader() {
             ) : (
               <Button
                 variant="ghost"
-                className="hidden md:inline-flex"
+                className="hidden lg:inline-flex"
                 onClick={() => setShowLogin(true)}
               >
                 Sign in

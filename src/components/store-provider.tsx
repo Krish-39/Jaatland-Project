@@ -255,7 +255,7 @@ export function StoreProvider({
           key={toast?.id}
           role="status"
           aria-live="polite"
-          className={`pointer-events-auto rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all duration-200 dark:bg-white dark:text-slate-900 ${
+          className={`pointer-events-auto rounded-full border-2 border-[#1a1815] bg-sticker px-5 py-2 text-sm font-bold text-[#1a1815] shadow-[4px_4px_0_0_#1a1815] transition-all duration-200 ${
             toast ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
           }`}
         >

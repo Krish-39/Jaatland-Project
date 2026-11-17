@@ -16,7 +16,7 @@ export function LegalArticle({
   return (
     <article className="space-y-8 leading-relaxed">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+        <h1 className="font-display text-5xl md:text-6xl">{title}</h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           Last updated: {LEGAL_LAST_UPDATED}
         </p>
@@ -46,7 +46,7 @@ export function LegalSection({
 /** The notice every legal page carries while the site is a demo. */
 export function DemoNotice() {
   return (
-    <p className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
+    <p className="rounded-2xl border-2 border-[#1a1815] bg-sticker text-[#1a1815] p-4 text-sm">
       <strong>This website is a demonstration.</strong> No goods are sold, no
       contract is concluded when an order is placed, no real payment is taken
       (payments run in Stripe test mode) and

@@ -176,11 +176,11 @@ export default function CheckoutPage() {
               </svg>
             </div>
           </div>
-          <h1 className="mb-2 text-2xl font-bold">Order confirmed</h1>
+          <h1 className="mb-2 font-display text-4xl">Order confirmed</h1>
           <p className="mb-4 text-gray-600 dark:text-gray-400">
             Thank you for your order.
           </p>
-          <p className="mb-8 text-sm text-gray-500">Order ID: {orderId}</p>
+          <p className="mb-8 text-sm text-muted-foreground">Order ID: {orderId}</p>
           <Button onClick={() => router.push("/orders")}>View your orders</Button>
         </div>
       </div>
@@ -191,7 +191,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold">Your cart is empty</h1>
+          <h1 className="mb-4 font-display text-4xl">Your cart is empty</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             Add some products to your cart to proceed with checkout.
           </p>
@@ -213,7 +213,7 @@ export default function CheckoutPage() {
           Back to store
         </Button>
 
-        <h1 className="mb-8 text-3xl font-bold">Checkout</h1>
+        <h1 className="mb-8 font-display text-5xl">Checkout</h1>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <div>
@@ -332,7 +332,7 @@ export default function CheckoutPage() {
                       secure payment page to pay by card. Card details are
                       entered there and never reach this site.
                     </p>
-                    <p className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
+                    <p className="rounded-2xl border-2 border-[#1a1815] bg-sticker text-[#1a1815] p-3">
                       <span className="font-medium">Stripe test mode:</span> no
                       real money is charged and nothing is shipped. Pay with the
                       test card <code>4242 4242 4242 4242</code>, any future
@@ -340,7 +340,7 @@ export default function CheckoutPage() {
                     </p>
                   </div>
                 ) : (
-                  <p className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200">
+                  <p className="rounded-2xl border-2 border-[#1a1815] bg-sticker text-[#1a1815] p-3 text-sm">
                     <span className="font-medium">Demo checkout:</span> payment
                     is not connected in this deployment, so the order is placed
                     without a payment step. Nothing is charged or shipped.
@@ -380,7 +380,7 @@ export default function CheckoutPage() {
                   directly above the order button, on every screen size. */}
               <section
                 aria-labelledby="order-recap-heading"
-                className="rounded-lg border p-4 text-sm"
+                className="rounded-2xl border-2 border-ink p-4 text-sm"
               >
                 <h2 id="order-recap-heading" className="mb-2 font-semibold">
                   Your order
@@ -431,6 +431,7 @@ export default function CheckoutPage() {
                 type="submit"
                 className="w-full"
                 size="lg"
+                variant="brand"
                 disabled={isProcessing || showcase}
               >
                 {isProcessing
@@ -443,7 +444,7 @@ export default function CheckoutPage() {
           </div>
 
           <div>
-            <div className="sticky top-24 rounded-lg border bg-gray-50 p-6 dark:bg-slate-900">
+            <div className="sticky top-24 rounded-2xl border-2 border-ink bg-slate-100 p-6 shadow-[6px_6px_0_0_var(--shadow-ink)] dark:bg-slate-900">
               <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
               <div className="space-y-4">
                 {cartItems.map((item) => (
@@ -465,7 +466,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1">
                       <div className="font-medium">{item.product?.name}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {item.product?.category}{" "}
                         {item.size && `• Size: ${item.size}`}
                       </div>
@@ -510,7 +511,7 @@ export default function CheckoutPage() {
                 incl. VAT
               </p>
 
-              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <ShieldCheck className="h-4 w-4" />
                 <span>
                   {payments

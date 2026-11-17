@@ -5,14 +5,6 @@ import Link from "next/link";
 import { PriceNote } from "@/components/price-note";
 import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { formatCurrency, getImageUrl } from "@/lib/utils";
 import { Product } from "@/lib/types";
 import { Heart, ShoppingCart } from "lucide-react";
@@ -37,30 +29,30 @@ export function ProductCard({
   const productUrl = `/product/${product.id}`;
 
   return (
-    <Card className="group h-full gap-0 overflow-hidden p-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-      <CardHeader className="relative p-0">
+    <article className="lift group relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-ink bg-card">
+      <div className="relative">
         <Link
           href={productUrl}
-          className="block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="block overflow-hidden"
           aria-label={`View ${product.name}`}
         >
-          <div className="relative h-56 w-full bg-slate-100 dark:bg-slate-800">
+          <div className="relative aspect-[4/5] w-full border-b-2 border-ink bg-slate-200 dark:bg-slate-800">
             <ProductImage
               src={getImageUrl(product)}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="transition-transform duration-500 group-hover:scale-[1.03]"
+              className="transition-transform duration-500 group-hover:scale-[1.05]"
             />
           </div>
         </Link>
 
-        <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1">
-          {product.badge && <Badge variant="secondary">{product.badge}</Badge>}
+        <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
+          {product.badge && <span className="sticker">{product.badge}</span>}
           {isInCart && (
-            <Badge variant="default">
-              In Cart ({cartQty})
-            </Badge>
+            <span className="inline-flex items-center rounded-full border-2 border-[#1a1815] bg-brand px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-[#1a1815]">
+              In cart · {cartQty}
+            </span>
           )}
         </div>
 
@@ -73,50 +65,50 @@ export function ProductCard({
           }
           aria-pressed={isInWishlist}
           onClick={() => onToggleWishlist(product.id)}
-          className={`absolute right-3 top-3 rounded-full bg-white/90 p-2 text-slate-700 shadow transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-            isInWishlist ? "text-red-600 dark:text-red-400" : ""
+          className={`absolute right-3 top-3 grid size-10 place-items-center rounded-full border-2 border-[#1a1815] shadow-[2px_2px_0_0_#1a1815] transition-transform hover:scale-110 ${
+            isInWishlist ? "bg-brand text-[#1a1815]" : "bg-[#fbf8f1] text-[#1a1815]"
           }`}
         >
-          <Heart
-            className={`h-5 w-5 ${isInWishlist ? "fill-current" : ""}`}
-          />
+          <Heart className={`h-5 w-5 ${isInWishlist ? "fill-current" : ""}`} />
         </button>
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex-1 space-y-1 p-4">
-        <Link
-          href={productUrl}
-          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <CardTitle className="line-clamp-1 text-base">
-            {product.name}
-          </CardTitle>
-        </Link>
-        <div className="text-sm text-slate-500 dark:text-slate-400">
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-start justify-between gap-3">
+          <Link href={productUrl} className="min-w-0">
+            <h3 className="line-clamp-2 text-base font-bold leading-snug">
+              {product.name}
+            </h3>
+          </Link>
+          <div className="shrink-0 text-right">
+            <div className="font-display text-2xl leading-none">
+              {formatCurrency(product.price)}
+            </div>
+          </div>
+        </div>
+        <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
           {product.category} · {product.color}
         </div>
-        <div className="pt-1 text-lg font-semibold">
-          {formatCurrency(product.price)}
-        </div>
-        <PriceNote />
-      </CardContent>
+        <PriceNote className="mt-1" />
 
-      <CardFooter className="flex items-center justify-between gap-2 p-4 pt-0">
-        <div className="min-w-0 truncate text-xs text-slate-500 dark:text-slate-400">
-          Sizes: {product.size.join(", ") || "One size"}
+        <div className="mt-auto flex items-center justify-between gap-2 pt-4">
+          <div className="min-w-0 truncate text-xs text-slate-600 dark:text-slate-400">
+            {product.size.join(" · ") || "One size"}
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="brand"
+            onClick={() => onAddToCart(product.id)}
+            className="shrink-0"
+            aria-label={`${isInCart ? "Add more" : "Add"} ${product.name} to cart`}
+          >
+            <ShoppingCart className="h-4 w-4" />
+            {isInCart ? "Add more" : "Add"}
+          </Button>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => onAddToCart(product.id)}
-          className="shrink-0"
-          aria-label={`Add ${product.name} to cart`}
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {isInCart ? "Add more" : "Add"}
-        </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </article>
   );
 }
 
@@ -139,7 +131,7 @@ export function ProductGrid({
 }: ProductGridProps) {
   if (products.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed px-6 py-16 text-center">
+      <div className="rounded-2xl border-2 border-dashed border-ink px-6 py-16 text-center">
         <ShoppingCart className="mx-auto mb-3 h-8 w-8 opacity-40" />
         <p className="text-sm text-slate-600 dark:text-slate-400">
           {emptyMessage}
@@ -149,7 +141,7 @@ export function ProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product) => {
         const lines = cart.filter((item) => item.id === product.id);
         const cartQty = lines.reduce((sum, item) => sum + item.qty, 0);

@@ -106,7 +106,7 @@ export function AdminPanel({ stats }: { stats: AdminStats }) {
         </Button>
 
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <h1 className="font-display text-5xl">Admin Dashboard</h1>
           <Button
             variant="outline"
             onClick={async () => {
@@ -247,7 +247,7 @@ function DashboardTab({ stats }: { stats: AdminStats }) {
               <CardTitle className="text-sm font-medium">{tile.label}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{tile.value}</div>
+              <div className="font-display text-4xl">{tile.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -259,7 +259,7 @@ function DashboardTab({ stats }: { stats: AdminStats }) {
         </CardHeader>
         <CardContent>
           {stats.recentOrders.length === 0 ? (
-            <p className="py-6 text-center text-sm text-gray-500">
+            <p className="py-6 text-center text-sm text-muted-foreground">
               No orders yet. They&apos;ll appear here once customers check out.
             </p>
           ) : (
@@ -271,7 +271,7 @@ function DashboardTab({ stats }: { stats: AdminStats }) {
                 >
                   <div className="min-w-0">
                     <div className="font-medium">Order #{order.id}</div>
-                    <div className="truncate text-sm text-gray-500">
+                    <div className="truncate text-sm text-muted-foreground">
                       {new Date(order.date).toLocaleDateString("en-IE", {
                         year: "numeric",
                         month: "short",
@@ -290,7 +290,7 @@ function DashboardTab({ stats }: { stats: AdminStats }) {
               ))}
             </div>
           )}
-          <p className="mt-4 text-xs text-gray-500">
+          <p className="mt-4 text-xs text-muted-foreground">
             Demo orders: no payment is taken, and orders are deleted
             automatically after 30 days.
           </p>
@@ -426,11 +426,11 @@ function HomepageTab() {
                     </Button>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 mb-3">
+                <p className="text-sm text-muted-foreground mb-3">
                   {selectedProducts.length} of {categoryProducts.length} products selected for homepage
                 </p>
                 {categoryProducts.length === 0 ? (
-                  <p className="text-sm text-gray-400">No products in this category. Add products first.</p>
+                  <p className="text-sm text-muted-foreground">No products in this category. Add products first.</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                     {categoryProducts.map((product) => (

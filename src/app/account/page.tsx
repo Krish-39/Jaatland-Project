@@ -25,9 +25,9 @@ export default async function AccountPage() {
           Back to Store
         </Link>
 
-        <h1 className="text-3xl font-bold">Your account</h1>
+        <h1 className="font-display text-5xl">Your account</h1>
 
-        <dl className="mt-6 space-y-3 rounded-lg border p-4 text-sm">
+        <dl className="mt-6 space-y-3 rounded-2xl border-2 border-ink p-4 text-sm">
           <div className="flex justify-between gap-4">
             <dt className="opacity-70">Email</dt>
             <dd className="font-medium">{user.email}</dd>

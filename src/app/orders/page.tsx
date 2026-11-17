@@ -27,7 +27,7 @@ const LS = LS_KEYS;
 function statusClasses(status: Order["status"]) {
   switch (String(status).toLowerCase()) {
     case "pending":
-      return "bg-amber-500 text-white";
+      return "border-[#1a1815] bg-sticker text-[#1a1815]";
     case "paid":
       return "bg-green-600 text-white";
     case "processing":
@@ -93,7 +93,7 @@ export default function OrdersPage() {
     return (
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold">Your orders</h1>
+          <h1 className="mb-4 font-display text-4xl">Your orders</h1>
           <ShowcaseNotice className="mb-6 text-left" />
           <Button onClick={() => router.push("/")}>Continue shopping</Button>
         </div>
@@ -105,7 +105,7 @@ export default function OrdersPage() {
     return (
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold">Could not load your orders</h1>
+          <h1 className="mb-4 font-display text-4xl">Could not load your orders</h1>
           <p role="alert" className="mb-6 text-gray-600 dark:text-gray-400">
             Please check your connection and try again.
           </p>
@@ -120,7 +120,7 @@ export default function OrdersPage() {
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
-          <h1 className="mb-4 text-2xl font-bold">No orders yet</h1>
+          <h1 className="mb-4 font-display text-4xl">No orders yet</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             {user
               ? "You haven't placed any orders yet."
@@ -144,8 +144,8 @@ export default function OrdersPage() {
           Back to Store
         </Button>
 
-        <h1 className="mb-2 text-3xl font-bold">Your orders</h1>
-        <p className="mb-8 text-sm text-gray-500">
+        <h1 className="mb-2 font-display text-5xl">Your orders</h1>
+        <p className="mb-8 text-sm text-muted-foreground">
           {user
             ? `Signed in as ${user.email}`
             : "Showing orders placed as a guest in this browser"}
@@ -167,7 +167,7 @@ export default function OrdersPage() {
                       {order.status.charAt(0).toUpperCase() +
                         order.status.slice(1)}
                     </Badge>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-muted-foreground">
                       {new Date(order.date).toLocaleDateString("en-IE", {
                         year: "numeric",
                         month: "short",
@@ -204,7 +204,7 @@ export default function OrdersPage() {
                             />
                             <div className="flex-1">
                               <div className="font-medium">{name}</div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-muted-foreground">
                                 Qty: {item.qty}
                                 {item.size && ` • Size: ${item.size}`}
                               </div>

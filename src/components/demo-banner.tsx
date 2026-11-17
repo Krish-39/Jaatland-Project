@@ -4,7 +4,7 @@ export function DemoBanner({ showcase = false }: { showcase?: boolean }) {
   return (
     <div
       role="note"
-      className="bg-slate-900 px-4 py-1.5 text-center text-xs text-white dark:bg-slate-100 dark:text-slate-900"
+      className="border-b-2 border-[#1a1815] bg-brand px-4 py-1.5 text-center text-xs font-medium text-[#1a1815]"
     >
       <strong className="font-semibold">Demo store.</strong> Orders are not
       fulfilled and no real payment is taken.

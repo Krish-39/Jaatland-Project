@@ -8,7 +8,7 @@ import { ProductImage } from "@/components/product-image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Heart, Share2, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
+import { ArrowLeft, Check, Heart, Share2, ShieldCheck, ShoppingCart, Truck } from "lucide-react";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { formatCurrency, getImageUrl } from "@/lib/utils";
 import { useStore } from "@/components/store-provider";
@@ -94,7 +94,7 @@ export function ProductDetail({ id }: { id: string }) {
     return (
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold">Product not found</h1>
+          <h1 className="mb-4 font-display text-4xl">Product not found</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             The product you&apos;re looking for doesn&apos;t exist.
           </p>
@@ -106,6 +106,8 @@ export function ProductDetail({ id }: { id: string }) {
 
   const images = product.images || [];
   const isWishlisted = wishlist.includes(product.id);
+
+  const needsSize = !selectedSize && (product.size?.length ?? 0) > 0;
 
   const handleAddToCart = () => {
     addToCart(product, selectedSize || product.size?.[0]);
@@ -119,9 +121,9 @@ export function ProductDetail({ id }: { id: string }) {
           Back
         </Button>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           <div className="space-y-4">
-            <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100 dark:bg-slate-800">
+            <div className="relative aspect-square overflow-hidden rounded-[2rem] border-2 border-ink bg-slate-200 shadow-[8px_8px_0_0_var(--shadow-ink)] dark:bg-slate-800">
               <ProductImage
                 src={images[activeImageIndex]}
                 alt={product.name}
@@ -162,21 +164,19 @@ export function ProductDetail({ id }: { id: string }) {
           <div className="space-y-6">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                {product.badge && (
-                  <Badge variant="secondary">{product.badge}</Badge>
-                )}
+                {product.badge && <span className="sticker">{product.badge}</span>}
                 <Badge variant="outline">{product.category}</Badge>
               </div>
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="font-display mt-3 text-5xl md:text-6xl">
                 {product.name}
               </h1>
-              <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="mt-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                 <span>{product.color}</span>
               </div>
             </div>
 
             <div>
-              <div className="text-3xl font-bold">
+              <div className="font-display text-5xl">
                 {formatCurrency(product.price)}
               </div>
               <PriceNote className="mt-1 text-sm" />
@@ -201,7 +201,12 @@ export function ProductDetail({ id }: { id: string }) {
             <Separator />
 
             <div>
-              <h3 className="mb-2 font-medium">Select Size</h3>
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wider">Select size</h2>
+              {needsSize && (
+                <p id="size-hint" className="-mt-1 mb-3 text-sm text-slate-600 dark:text-slate-400">
+                  Choose a size to add this item to your cart.
+                </p>
+              )}
               <div className="flex flex-wrap gap-2" role="group" aria-label="Select a size">
                 {product.size?.map((size) => (
                   <Button
@@ -219,17 +224,20 @@ export function ProductDetail({ id }: { id: string }) {
 
             <div className="flex gap-3">
               <Button
-                className="flex-1"
+                className="min-w-0 flex-1"
                 size="lg"
+                variant="brand"
                 onClick={handleAddToCart}
-                disabled={!selectedSize && product.size && product.size.length > 0}
+                disabled={needsSize}
+                aria-describedby={needsSize ? "size-hint" : undefined}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                {isInCart ? `Add More (${cartItem?.qty || 0})` : "Add to Cart"}
+                {isInCart ? `Add more (${cartItem?.qty || 0} in cart)` : "Add to cart"}
               </Button>
               <Button
                 variant="outline"
-                size="lg"
+                size="icon"
+                className="size-12 shrink-0"
                 onClick={() => toggleWishlist(product.id)}
                 aria-label={
                   isWishlisted ? "Remove from wishlist" : "Add to wishlist"
@@ -238,33 +246,22 @@ export function ProductDetail({ id }: { id: string }) {
               >
                 <Heart
                   className={`h-5 w-5 ${
-                    isWishlisted ? "fill-red-500 text-red-500" : ""
+                    isWishlisted ? "fill-brand text-brand" : ""
                   }`}
                 />
               </Button>
               <Button
                 variant="outline"
-                size="lg"
+                size="icon"
+                className="size-12 shrink-0"
                 onClick={shareProduct}
                 aria-label="Share product"
               >
                 {shareCopied ? (
-                  <span className="flex items-center gap-2 text-sm">
-                    <svg
-                      className="h-5 w-5 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Copied!
-                  </span>
+                  <>
+                    <Check className="h-5 w-5 text-[#2f7d32] dark:text-sticker" aria-hidden="true" />
+                    <span className="sr-only">Link copied</span>
+                  </>
                 ) : (
                   <Share2 className="h-5 w-5" />
                 )}
@@ -273,7 +270,7 @@ export function ProductDetail({ id }: { id: string }) {
 
             <Separator />
 
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 rounded-2xl border-2 border-ink p-4 text-sm">
               <div className="flex justify-between">
                 <span className="font-medium">Category</span>
                 <span>{product.category}</span>
@@ -283,7 +280,7 @@ export function ProductDetail({ id }: { id: string }) {
                 <span>{product.color}</span>
               </div>
               <div className="flex justify-between gap-4">
-                <span className="font-medium">Available Sizes</span>
+                <span className="font-medium">Available sizes</span>
                 <span className="text-right">{product.size?.join(", ")}</span>
               </div>
             </div>
@@ -291,16 +288,18 @@ export function ProductDetail({ id }: { id: string }) {
         </div>
 
         {similarProducts.length > 0 && (
-          <div className="mt-16">
-            <h2 className="mb-6 text-2xl font-bold">Similar Products</h2>
+          <div className="mt-20">
+            <h2 className="font-display mb-8 border-b-2 border-ink pb-4 text-4xl md:text-5xl">
+              You may also like
+            </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {similarProducts.map((similar) => (
                 <Link
                   key={similar.id}
                   href={`/product/${similar.id}`}
-                  className="group cursor-pointer rounded-xl border p-3 transition-shadow hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="lift group overflow-hidden rounded-2xl border-2 border-ink bg-card"
                 >
-                  <div className="relative h-48 overflow-hidden rounded-lg bg-gray-100 dark:bg-slate-800">
+                  <div className="relative aspect-[4/5] overflow-hidden border-b-2 border-ink bg-slate-200 dark:bg-slate-800">
                     <ProductImage
                       src={getImageUrl(similar)}
                       alt={similar.name}
@@ -309,18 +308,18 @@ export function ProductDetail({ id }: { id: string }) {
                       className="transition-transform duration-300 group-hover:scale-[1.03]"
                     />
                     {similar.badge && (
-                      <Badge className="absolute left-2 top-2">
+                      <span className="sticker absolute left-2 top-2">
                         {similar.badge}
-                      </Badge>
+                      </span>
                     )}
                   </div>
-                  <div className="mt-3">
-                    <h3 className="font-medium">{similar.name}</h3>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold">
+                  <div className="p-3">
+                    <h3 className="font-bold">{similar.name}</h3>
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="font-display text-xl">
                         {formatCurrency(similar.price)}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                         {similar.category}
                       </span>
                     </div>

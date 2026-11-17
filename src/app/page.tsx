@@ -3,7 +3,9 @@
 import React, { useMemo } from "react";
 import { X as XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CategoryTiles } from "@/components/category-tiles";
 import { Hero } from "@/components/hero";
+import { Marquee } from "@/components/marquee";
 import { ProductGrid } from "@/components/product-card";
 import { useStore } from "@/components/store-provider";
 import { useFilters } from "@/components/filters-provider";
@@ -21,6 +23,30 @@ function categoryHeading(category: string) {
   if (category === "Accessories") return "Accessories";
   if (category === "Unisex") return "Unisex Collection";
   return `${category}'s Collection`;
+}
+
+function SectionHeading({
+  title,
+  subtitle,
+  count,
+}: {
+  title: string;
+  subtitle: string;
+  count: number;
+}) {
+  return (
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-3 border-b-2 border-ink pb-4">
+      <div>
+        <h2 className="font-display text-4xl md:text-5xl">{title}</h2>
+        <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-400">
+          {subtitle}
+        </p>
+      </div>
+      <span className="sticker">
+        {count} {count === 1 ? "item" : "items"}
+      </span>
+    </div>
+  );
 }
 
 export default function Jaatland() {
@@ -81,23 +107,27 @@ export default function Jaatland() {
       : "Filtered products";
 
   return (
-    <div className="min-h-[60vh] bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-
-      {!filters.hasActiveFilters && <Hero config={homepageConfig} />}
+    <div className="min-h-[60vh]">
+      {!filters.hasActiveFilters && (
+        <>
+          <Hero config={homepageConfig} />
+          <Marquee />
+        </>
+      )}
 
       <main
         id="products"
-        className="mx-auto max-w-7xl scroll-mt-20 px-4 pb-24 pt-10"
+        className="mx-auto max-w-7xl scroll-mt-20 px-4 pb-24 pt-12"
       >
         {filters.hasActiveFilters ? (
           <>
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+                <h2 className="font-display text-4xl md:text-5xl">
                   {resultTitle}
                 </h2>
                 <p
-                  className="mt-1 text-sm opacity-70"
+                  className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-400"
                   aria-live="polite"
                 >
                   {filters.filtered.length}{" "}
@@ -125,22 +155,15 @@ export default function Jaatland() {
             />
           </>
         ) : (
-          <div className="space-y-16">
+          <div className="space-y-20">
+            <CategoryTiles />
+
             <section id="featured" className="scroll-mt-24">
-              <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-                <div>
-                  <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                    Featured Products
-                  </h2>
-                  <p className="mt-1 text-sm opacity-70">
-                    A selection from the current collection.
-                  </p>
-                </div>
-                <span className="text-sm opacity-70">
-                  {featuredProducts.length}{" "}
-                  {featuredProducts.length === 1 ? "item" : "items"}
-                </span>
-              </div>
+              <SectionHeading
+                title="Featured products"
+                subtitle="A selection from the current collection."
+                count={featuredProducts.length}
+              />
               <ProductGrid
                 products={featuredProducts}
                 cart={cart}
@@ -162,20 +185,11 @@ export default function Jaatland() {
                   id={`category-${category.toLowerCase()}`}
                   className="scroll-mt-24"
                 >
-                  <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-                    <div>
-                      <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-                        {categoryHeading(category)}
-                      </h2>
-                      <p className="mt-1 text-sm opacity-70">
-                        {CATEGORY_COPY[category]}
-                      </p>
-                    </div>
-                    <span className="text-sm opacity-70">
-                      {categoryProducts.length}{" "}
-                      {categoryProducts.length === 1 ? "item" : "items"}
-                    </span>
-                  </div>
+                  <SectionHeading
+                    title={categoryHeading(category)}
+                    subtitle={CATEGORY_COPY[category]}
+                    count={categoryProducts.length}
+                  />
                   <ProductGrid
                     products={categoryProducts}
                     cart={cart}

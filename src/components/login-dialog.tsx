@@ -194,7 +194,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                 setIsCreateAccount((prev) => !prev);
                 setError("");
               }}
-              className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+              className="text-sm font-semibold underline underline-offset-4 hover:text-brand"
             >
               {isCreateAccount
                 ? "Already have an account? Sign in"

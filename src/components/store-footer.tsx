@@ -42,25 +42,25 @@ export function StoreFooter() {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <footer className="border-t bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/20">
+    <footer className="border-t-2 border-ink bg-ink text-background">
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div
           id="newsletter"
-          className="scroll-mt-24 rounded-3xl border bg-white p-6 shadow-sm dark:bg-slate-950 md:p-10"
+          className="scroll-mt-24 rounded-[2rem] border-2 border-[#1a1815] bg-brand p-6 text-[#1a1815] shadow-[8px_8px_0_0_var(--color-sticker)] md:p-10"
         >
           <div className="grid max-w-4xl grid-cols-1 items-center gap-6 md:grid-cols-3">
             <div className="md:col-span-2">
-              <h2 className="text-2xl font-bold tracking-tight">
+              <h2 className="font-display text-4xl md:text-5xl">
                 {homepageConfig.newsletterTitle}
               </h2>
-              <p className="mt-1 text-sm opacity-80">
+              <p className="mt-2 text-sm font-medium">
                 {homepageConfig.newsletterSubtitle}
               </p>
             </div>
 
             <div aria-live="polite">
               {newsletterDone ? (
-                <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-2 text-sm font-bold">
                   <Check className="h-5 w-5" />
                   Saved in this browser. Thank you for trying the demo.
                 </div>
@@ -68,6 +68,7 @@ export function StoreFooter() {
                 <form className="space-y-2" onSubmit={subscribe}>
                   <div className="flex items-center gap-2">
                     <Input
+                      className="border-[#1a1815] bg-[#fbf8f1] text-[#1a1815] placeholder:text-[#6b6357]"
                       type="email"
                       required
                       placeholder="you@example.com"
@@ -77,9 +78,14 @@ export function StoreFooter() {
                         setNewsletterEmail(event.target.value)
                       }
                     />
-                    <Button type="submit">Subscribe</Button>
+                    <Button
+                      type="submit"
+                      className="border-[#1a1815] bg-[#1a1815] text-[#fbf8f1] [--shadow-ink:#fbf8f1]"
+                    >
+                      Subscribe
+                    </Button>
                   </div>
-                  <p className="text-xs opacity-70">
+                  <p className="text-xs">
                     Demo: your email is saved only in this browser and no
                     emails are sent. See our{" "}
                     <Link
@@ -91,7 +97,7 @@ export function StoreFooter() {
                     .
                   </p>
                   {newsletterError && (
-                    <p role="alert" className="text-xs text-red-600">
+                    <p role="alert" className="text-xs font-bold">
                       {newsletterError}
                     </p>
                   )}
@@ -104,8 +110,10 @@ export function StoreFooter() {
         <div className="mt-10 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-2">
-              <Shirt className="h-5 w-5" />
-              <span className="font-extrabold">JAATLAND</span>
+              <span className="grid size-9 place-items-center rounded-full border-2 border-background bg-brand text-[#1a1815]">
+                <Shirt className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="font-display text-3xl">Jaatland</span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed opacity-70">
               Everyday essentials, designed for comfort and a clean, modern fit.
@@ -113,7 +121,7 @@ export function StoreFooter() {
           </div>
 
           <div className="text-sm">
-            <div className="font-semibold">Shop</div>
+            <div className="font-display text-xl">Shop</div>
             <ul className="mt-3 space-y-2 opacity-80">
               {CATEGORIES.map((category) => (
                 <li key={category}>
@@ -133,7 +141,7 @@ export function StoreFooter() {
           </div>
 
           <div className="text-sm">
-            <div className="font-semibold">Account</div>
+            <div className="font-display text-xl">Account</div>
             <ul className="mt-3 space-y-2 opacity-80">
               <li>
                 <button
@@ -167,7 +175,7 @@ export function StoreFooter() {
           </div>
 
           <div className="text-sm">
-            <div className="font-semibold">Help &amp; Legal</div>
+            <div className="font-display text-xl">Help &amp; Legal</div>
             <ul className="mt-3 space-y-2 opacity-80">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.href}>
@@ -183,7 +191,7 @@ export function StoreFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 border-t pt-6 text-xs opacity-60 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-3 border-t border-background/25 pt-6 text-xs opacity-75 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} Jaatland Clothing Co. All rights
             reserved.

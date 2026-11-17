@@ -36,6 +36,8 @@ export async function seedDatabase(db: Db, options: SeedOptions = {}): Promise<s
       }))
     );
     log.push(`Seeded ${DEFAULT_PRODUCTS.length} products`);
+  } else {
+    log.push(`Catalog already present (${productCount} products), not re-seeded`);
   }
 
   const existingConfig = await db

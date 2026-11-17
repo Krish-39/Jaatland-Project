@@ -7,6 +7,7 @@ import path from "node:path";
 import * as schema from "../src/db/schema";
 import { seedDatabase, type Db } from "../src/db/seed";
 import { databaseUrl, MISSING_DATABASE_MESSAGE } from "../src/db/url";
+import { adminEnvReport, describeAdminEnv } from "../src/db/admin-env";
 
 async function main() {
   const url = databaseUrl();
@@ -25,6 +26,17 @@ async function main() {
   const db = drizzle(neon(url), { schema });
   await migrate(db, { migrationsFolder: path.join(process.cwd(), "drizzle") });
   console.log("[db] Migrations applied");
+
+  console.log(
+    `[db] Building for: ${process.env.VERCEL_ENV ?? "local"}` +
+      (process.env.VERCEL_GIT_COMMIT_REF ? ` (branch ${process.env.VERCEL_GIT_COMMIT_REF})` : "")
+  );
+  const adminLines = describeAdminEnv(adminEnvReport(process.env), process.env.VERCEL_ENV);
+  for (const line of adminLines) {
+    (line.startsWith("WARNING") || line.startsWith("Fix") || line.startsWith("Found")
+      ? console.warn
+      : console.log)(`[db] ${line}`);
+  }
 
   const log = await seedDatabase(db as unknown as Db, {
     adminEmail: process.env.ADMIN_EMAIL,

@@ -22,7 +22,10 @@ describe("migrations and seed", () => {
 
   it("seeds the catalog and homepage once", async () => {
     await seedDatabase(db);
-    await seedDatabase(db);
+    const secondRun = await seedDatabase(db);
+    expect(secondRun).toContain(
+      `Catalog already present (${DEFAULT_PRODUCTS.length} products), not re-seeded`
+    );
 
     const products = await db.select().from(schema.products);
     expect(products).toHaveLength(DEFAULT_PRODUCTS.length);

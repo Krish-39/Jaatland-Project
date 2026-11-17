@@ -5,7 +5,6 @@ import { X as XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hero } from "@/components/hero";
 import { ProductGrid } from "@/components/product-card";
-import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
 import { StoreFooter } from "@/components/store-footer";
 import { StoreHeader } from "@/components/store-header";
 import { useStore } from "@/components/store-provider";
@@ -109,9 +108,7 @@ export default function Jaatland() {
         id="products"
         className="mx-auto max-w-7xl scroll-mt-20 px-4 pb-24 pt-10"
       >
-        {!isLoaded ? (
-          <ProductGridSkeleton />
-        ) : filters.hasActiveFilters ? (
+        {filters.hasActiveFilters ? (
           <>
             <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
               <div>

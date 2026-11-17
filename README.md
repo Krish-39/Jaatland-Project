@@ -2,288 +2,176 @@
 
 **Live demo:** <https://store.krriss.cloud>
 
-A storefront demo for **Jaatland Clothing Co.** It is a complete, client-side e-commerce front end: browse a catalog, search and filter it, fill a cart and wishlist, check out, read back your orders, and edit products and homepage copy from an admin panel.
-
-There is no backend and no database. The catalog, cart, wishlist, orders, signed-in user, theme, and homepage copy all live in the browser's `localStorage`. That is what makes it a one-command demo, and it is also why none of it is production-grade. See [Demo security](#demo-security).
+A storefront for **Jaatland Clothing Co.**, built as a production-grade demo: a real database, real accounts with server-side sessions, a server-enforced admin area, and the legal pages a German online shop needs. It is clearly labelled as a demo: nothing is sold, charged or shipped.
 
 ## Quick start
 
-Node 20.9 or newer is required (Next.js 16's minimum).
+Node 20.9 or newer is required.
 
 ```bash
 npm install
+cp .env.example .env.local   # set ADMIN_EMAIL and ADMIN_PASSWORD
 npm run dev
 ```
 
 Open <http://localhost:3000>.
 
-### Demo accounts
-
-Login is a `localStorage` check, not authentication, so treat these as sample values.
-
-| Role | Email | Password | What it unlocks |
-| --- | --- | --- | --- |
-| Admin | `krishahir@jaatland.com` | `1234` | Skips straight to `/admin`: dashboard stats, product CRUD, homepage editor |
-| Customer | any email you enter in the login dialog | your choice, 6+ characters | Cart, wishlist, and `/orders` scoped to that email |
-
-Registration keeps a single account per browser (one `jaatland_user_email` key), stored in plain text.
+No database setup is needed locally. Without `DATABASE_URL` the app starts an embedded Postgres (PGlite) in `.data/pglite`, applies the migrations and seeds the catalog on first use. Log in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set to reach `/admin`. Delete `.data/` to start from a clean database.
 
 ## What you can do
 
 **Shopping**
 
 - Browse four categories (Men, Women, Unisex, Accessories) with a featured row plus one section per category.
-- Search by name, filter by category, size, colour, and price range, and sort four ways. Any active filter swaps the homepage grid for a single results view.
-- Add to cart from a card or the product page. Lines split by size, so the same shirt in M and L are separate entries.
-- Watch the cart's free-shipping bar fill toward **€40**, with a toast confirming each change. Below €40 a €4.90 flat rate is added; the cart, checkout and order history all show the same shipping line and total.
+- Search by name, filter by category, size, colour and price range, and sort four ways.
+- Add to cart from a card or the product page; lines split by size.
+- Below €40 a €4.90 flat shipping rate applies; the cart, checkout and order history all show the same shipping line and total.
 
-**Product detail**
+**Accounts**
 
-- Image gallery, size picker, price, badge, and related products drawn from each product's `similarIds`.
+- Register and log in with email and password. Sessions are stored in the database and referenced by an `httpOnly` cookie.
+- `/account`: download your data as JSON, or delete your account.
 
 **Checkout and orders**
 
-- Shipping form (Germany only), card form with live input formatting, and an order summary repeated directly above the **Order with obligation to pay** button.
-- Payment is simulated: the card is never charged and never stored.
-- Order history is scoped to the signed-in email, or to the email used at the last guest checkout on that browser.
+- Shipping form (Germany only) and an order summary repeated directly above the **Order with obligation to pay** button.
+- Payment is simulated: the card is never charged, transmitted or stored.
+- Orders are still kept in the browser that placed them (see [Known gaps](#known-gaps)).
 
-**Admin** (`/admin`)
+**Admin** (`/admin`, admin accounts only)
 
-- Dashboard: total products, total orders, revenue, wishlist items, and recent orders, all read from local data.
-- Products: create, edit, and delete catalog entries, including images, sizes, badge, and related products.
-- Homepage: edit the hero title, subtitle, and image, the newsletter copy, and which products appear in each category row.
+- Create, edit and delete products; edit the hero, newsletter copy and featured products. Changes are saved to the database and appear on the storefront immediately.
 
 **Legal and trust**
 
 - Legal Notice (`/impressum`), Privacy Policy (`/datenschutz`), Terms (`/agb`), Right of Withdrawal (`/widerruf`) and Shipping & Payment (`/versand-zahlung`), linked from every page.
-- A site-wide banner states that this is a demo: nothing is sold, charged or shipped.
+- A site-wide banner states that this is a demo.
 - Every price carries "incl. VAT, plus shipping".
-- No cookies, no analytics, no third-party requests while browsing: fonts and product photos are served from the site itself.
-
-**Everywhere**
-
-- Dark mode applied before first paint, so there is no flash of the wrong theme.
-- Responsive layout. On mobile the header collapses into a sheet carrying search, filters, and sort.
-- Loading skeletons, keyboard-accessible controls, and ARIA labels on the interactive pieces.
+- No analytics, no tracking, no third-party requests while browsing. The only cookie is the login session.
 
 ## How it works
 
-### No server, one store
-
-Every page is a client component reading from a single `StoreProvider` (`src/components/store-provider.tsx`). The provider renders the seeded defaults on the server, hydrates from `localStorage` once on mount, then writes cart, wishlist, and user back on every change. Pages never prop-drill state to each other; they call `useStore()`.
-
 ```
-                    ┌────────────────────────────────┐
-                    │   StoreProvider (client)       │
-                    │   products · homepage config   │
-                    │   cart · wishlist · user       │
-                    │   toasts                       │
-                    └───────────────┬────────────────┘
-                                    │ useStore()
-        ┌───────────┬───────────────┼──────────────┬────────────┐
-        ▼           ▼               ▼              ▼            ▼
-    store-header  homepage     product detail  checkout     admin
-    (nav+filters)   grid                        orders       panel
-                                    │
-                                    ▼
-                     localStorage  (keys prefixed jaatland_)
+Browser                          Server (Next.js on Vercel)             Postgres (Neon)
+───────                          ──────────────────────────             ───────────────
+pages (prerendered HTML)   ◄──── root layout reads catalog  ──────────► products
+cart / wishlist / theme          server actions                         homepage_config
+  in localStorage                  auth:    login, register, logout ──► users
+session cookie (httpOnly) ─────►   admin:   products, homepage     ──► sessions
+                                   account: delete
+                                 /api/auth/session, /api/account/export
 ```
 
-### Order snapshots
+### Catalog
 
-`createOrder()` (`src/lib/orders.ts`) copies the name, price, and image onto every line at purchase time. Editing or deleting a product later cannot rewrite history, so an order always shows what was actually bought and at what price. Orders saved by older builds, which stored only an id and quantity, resolve against the live catalog as a fallback via `resolveOrderItem`.
+The root layout (`src/app/layout.tsx`) reads products and homepage copy through `src/lib/data/catalog.ts` and hands them to `StoreProvider`, so every page is rendered on the server with real data. Pages are prerendered and refreshed when an admin saves a change (`revalidatePath` in `src/app/actions/admin.ts`), with a 5-minute timer as a safety net. Prices are stored as integer cents and converted at the edge.
 
-### Order history scoping
+### Authentication
 
-There are no accounts to look up, so `/orders` filters stored orders by the signed-in email or, for guests, by the email recorded at the last checkout on that browser. `orderBelongsTo` does a case-insensitive match against either the order email or the shipping email, which also covers legacy orders that only stored the latter.
+- Passwords are hashed with scrypt (`src/lib/auth/password.ts`); the parameters are stored with each hash.
+- A session is a random 256-bit token. The cookie holds the token; the database holds only its SHA-256 (`src/lib/auth/session.ts`). The cookie is `httpOnly`, `Secure`, `SameSite=Lax` and uses the `__Host-` prefix in production.
+- Login answers identically for an unknown email and a wrong password, and attempts are rate-limited per client and per account.
+- Pages stay static: the browser asks `/api/auth/session` once after load to learn who is signed in.
 
-### Guarded storage
+### Authorization
 
-Every read and write goes through `src/lib/storage.ts`. One corrupt `localStorage` entry used to throw during render and take the whole page down, so `readJson`, `readArray`, and friends swallow parse errors and return a fallback. Writes return `false` instead of throwing when storage is full or disabled, and the store surfaces that as a toast.
+`/admin` checks the session on the server on every request and redirects anyone who is not an admin. Every admin server action calls `requireAdmin()` again before writing, so calling an action directly without an admin session is refused. All input is parsed with zod schemas in `src/lib/validation.ts`.
 
-### Filters shared across the header and the grid
+### Browser storage
 
-`useProductFilters` (`src/hooks/use-product-filters.ts`) owns query, category, size, colour, sort, and price range, so the header's controls and the homepage grid stay in sync without a dozen setters passed down. Sort and price range persist across reloads. The price range also stores the bounds it was chosen against, so a range the user narrowed stays put when the catalog changes while an untouched one follows the new bounds.
-
-### Theme without a flash
-
-`src/app/layout.tsx` inlines a small script in `<head>` that adds the `dark` class before first paint if `jaatland_theme` is `dark`. React re-applies it afterward, with `suppressHydrationWarning` on `<html>` to cover the class the script already set.
+Only per-browser convenience state lives in `localStorage` (keys prefixed `jaatland_`): cart, wishlist, theme, sort, price filter, demo orders, last checkout email and the newsletter field. Reads and writes go through `src/lib/storage.ts`, which tolerates corrupt or unavailable storage. Keys from earlier builds (local accounts, the client-side admin flag, catalog overrides) are deleted on load.
 
 ## Reference
 
 ### Scripts
 
-| Script | Command | Notes |
-| --- | --- | --- |
-| `npm run dev` | `next dev --turbopack` | Dev server on port 3000 |
-| `npm run build` | `next build` | Production build |
-| `npm run start` | `next start` | Serve the production build |
-| `npm run lint` | `eslint .` | Flat config, Next 16 rules |
-| `npm run typecheck` | `tsc --noEmit` | Types only, no emit |
-| `npm run test` | `vitest` | Watch mode |
-| `npm run test:run` | `vitest run` | Single run, the one to use in CI |
-| `npm run test:coverage` | `vitest run --coverage` | V8 coverage |
-| `npm run test:ui` | `vitest --ui` | Needs `@vitest/ui` installed: `npm i -D @vitest/ui` |
+| Script | Notes |
+| --- | --- |
+| `npm run dev` | Dev server on port 3000 |
+| `npm run build` / `npm run start` | Production build and server |
+| `npm run lint`, `npm run typecheck` | ESLint, `tsc --noEmit` |
+| `npm run test:run` | Unit and database tests, single run |
+| `npm run db:generate` | Generate a migration after changing `src/db/schema.ts` |
+| `npm run db:migrate` | Apply migrations and seed (needs `DATABASE_URL`) |
+| `npm run vercel-build` | `db:migrate` then `next build`; Vercel runs this automatically |
+
+### Environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Postgres connection string (Neon). Required on Vercel; optional locally |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Admin account, created or updated by `db:migrate` |
+| `STRIPE_SECRET_KEY` | Test-mode key for `POST /api/create-payment-intent` (not yet used by the UI) |
 
 ### Routes
 
-| Route | File | Purpose |
-| --- | --- | --- |
-| `/` | `src/app/page.tsx` | Hero, featured row, per-category sections, newsletter |
-| `/product/[id]` | `src/app/product/[id]/page.tsx` | Product detail; `layout.tsx` sets per-product metadata |
-| `/checkout` | `src/app/checkout/page.tsx` | Shipping, simulated payment, confirmation |
-| `/orders` | `src/app/orders/page.tsx` | Order history for the current viewer |
-| `/admin` | `src/app/admin/page.tsx` | Dashboard, products, homepage editor |
-| `POST /api/create-payment-intent` | `src/app/api/create-payment-intent/route.ts` | Stripe PaymentIntent (not called by the UI) |
-| `/impressum`, `/datenschutz`, `/agb`, `/widerruf`, `/versand-zahlung` | `src/app/(legal)/*/page.tsx` | Legal pages (static, server-rendered) |
-| (boundaries) | `src/app/error.tsx`, `src/app/not-found.tsx` | Error and 404 screens |
-
-### Browser storage keys
-
-All keys are prefixed `jaatland_` and declared in `LS_KEYS` (`src/lib/mock-data.ts`).
-
-| Key | Holds |
+| Route | Purpose |
 | --- | --- |
-| `jaatland_products_v2` | Admin-edited catalog (JSON array of `Product`) |
-| `jaatland_homepage_v2` | Admin-edited hero, newsletter copy, per-category product ids |
-| `jaatland_cart` | Cart lines: `{ id, size, qty }` |
-| `jaatland_wishlist` | Product ids |
-| `jaatland_orders` | Order records |
-| `jaatland_buyer_email` | Email from the last guest checkout |
-| `jaatland_user` | Signed-in `{ email }` |
-| `jaatland_user_email`, `jaatland_user_password` | Registered demo account (plain text) |
-| `jaatland_admin_email` | Admin email used at login |
-| `jaatland_theme` | `"dark"` when set; anything else is light |
-| `jaatland_sort` | Persisted sort option |
-| `jaatland_price` | Persisted `{ range, bounds }` for the price slider |
-| `jaatland_newsletter_email` | Newsletter signup email |
-
-### Catalog constants
-
-`src/lib/mock-data.ts` seeds `DEFAULT_PRODUCTS` (6 items) and defines the filter vocabulary:
-
-- **Categories:** Men, Women, Unisex, Accessories
-- **Sizes:** XS, S, M, L, XL, XXL (plus `One` for accessories, in the `ProductSize` type)
-- **Colours:** Black, White, Gray, Blue, Beige, Olive, Red, Maroon
-
-Shipping prices live in `src/lib/shipping.ts` (`FREE_SHIPPING_THRESHOLD`, `SHIPPING_FLAT_RATE`). The cart, checkout, order builder, payment route and the Shipping & Payment page all read from it.
-
-### Legal configuration
-
-`src/lib/legal-config.ts` holds the operator's name, address and contact details used by the legal pages. They ship empty on purpose: German law requires the real details of whoever runs the site, so the Legal Notice shows a warning until they are filled in. **Fill them in before deploying publicly.** The legal texts are written for this demo and are not legal advice; have them reviewed before selling anything for real.
-
-### Images
-
-Product and hero photos are local files in `public/products/`, taken from Unsplash under the Unsplash License; `public/products/CREDITS.md` lists each source. `next/image` only accepts local paths and `images.unsplash.com`; any other URL (including one typed into the admin panel) renders the placeholder instead. Only add images you hold the rights to.
-
-### Security headers
-
-`next.config.ts` sends a Content Security Policy, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy` on every response. The CSP still allows inline scripts, which Next.js needs until nonces are added.
-
-### Payment endpoint
-
-`POST /api/create-payment-intent` returns a Stripe client secret. It exists so payments can be wired up later; the storefront never calls it, which is why checkout works without a key. It prices orders from the server-side catalog and allows 10 requests per client per minute (`src/lib/rate-limit.ts`; in-memory, so per server instance).
-
-```env
-# .env.local
-STRIPE_SECRET_KEY=sk_test_your_key_here
-```
-
-Request body:
-
-```json
-{ "items": [ { "id": "p1", "qty": 2 } ] }
-```
-
-| Behaviour | Detail |
-| --- | --- |
-| Pricing | Recomputed server-side from `DEFAULT_PRODUCTS` plus shipping; an amount supplied by the client is ignored |
-| Limits | 1 to 50 lines; each `qty` an integer from 1 to 99; unknown product ids rejected |
-| Currency | EUR, card only |
-| Responses | `200 { clientSecret }`, `400` bad body or unknown product, `503` no key configured, `500` provider error (details logged server-side only) |
+| `/` | Hero, featured row, per-category sections, newsletter |
+| `/product/[id]` | Product detail, with metadata and JSON-LD from the database; unknown ids return 404 |
+| `/checkout`, `/orders` | Demo checkout and order history |
+| `/account` | Account details, data export, account deletion (signed-in users) |
+| `/admin` | Dashboard, products, homepage editor (admins) |
+| `/impressum`, `/datenschutz`, `/agb`, `/widerruf`, `/versand-zahlung` | Legal pages |
+| `GET /api/auth/session` | Who is signed in |
+| `GET /api/account/export` | The signed-in user's data as JSON |
+| `POST /api/create-payment-intent` | Stripe PaymentIntent priced on the server, rate-limited |
 
 ### Project layout
 
 ```
+drizzle/                 SQL migrations (generated; commit them)
+scripts/db-migrate.ts    Applies migrations and seeds
 src/
-  app/                 Routes, error/not-found boundaries, the payment route
-  components/
-    ui/                shadcn/ui primitives (button, card, sheet, dialog, slider, ...)
-    store-provider.tsx Global state and toasts (useStore)
-    store-header.tsx   Sticky nav, search, filter/sort menus, cart + wishlist sheets
-    store-footer.tsx   Newsletter signup, links, social icons
-    hero.tsx           Homepage hero (admin-editable copy and image)
-    login-dialog.tsx   Login and register dialog
-    product-card.tsx   Grid card
-    product-image.tsx  next/image with a placeholder and broken-URL fallback
-    product-grid-skeleton.tsx  Loading skeletons for the grid and product page
-  hooks/
-    use-product-filters.ts  Shared search, filter, sort, and price state
+  app/                   Routes, server actions (app/actions), API routes
+  components/            UI; components/ui holds the shadcn/ui primitives
+  db/                    Schema, connection, seed
+  hooks/                 Shared search, filter and sort state
   lib/
-    mock-data.ts  Seed catalog, constants, storage keys, admin credentials
-    shipping.ts   Shipping threshold, flat rate and totals (pure, tested)
-    legal-config.ts  Operator details and legal page links
-    orders.ts     Order snapshots, totals, buyer matching (pure, tested)
-    storage.ts    Guarded localStorage reads and writes (tested)
-    types.ts      Shared types
-    utils.ts      cn(), EUR formatting, image and id helpers (tested)
-public/               Brand favicon and product photos (public/products, with CREDITS.md)
+    auth/                Password hashing, sessions
+    data/                Database queries
+    validation.ts        zod schemas for all client input
+    shipping.ts          Shipping threshold, flat rate, totals
+    legal-config.ts      Operator details and legal links
+public/products/         Product photos and CREDITS.md
 ```
 
-## Common tasks
+### Legal configuration
 
-### Reset the demo to a clean state
+`src/lib/legal-config.ts` holds the operator's name, address and contact details used by the legal pages. They ship empty on purpose: German law requires the real details of whoever runs the site, so the Legal Notice shows a warning until they are filled in. **Fill them in before deploying publicly.** The legal texts are written for this demo and are not legal advice; have them reviewed before selling anything for real. Keep the Privacy Policy in step with the code whenever data processing changes.
 
-Clear the app's keys, then reload. In the browser console:
+### Images
 
-```js
-Object.keys(localStorage)
-  .filter((key) => key.startsWith("jaatland_"))
-  .forEach((key) => localStorage.removeItem(key));
-```
+Product and hero photos are local files in `public/products/`, taken from Unsplash under the Unsplash License; `CREDITS.md` there lists each source. Only local paths and `images.unsplash.com` are accepted, by `next/image` and by the admin form's server-side validation. Only add images you hold the rights to.
 
-The catalog, cart, orders, theme, and admin edits all return to their seeded defaults on the next load. DevTools > Application > Local Storage > delete the same keys works too.
+### Security headers
 
-### Add a product
+`next.config.ts` sends a Content Security Policy, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy` on every response. The CSP still allows inline scripts, which Next.js needs unless nonces are used.
 
-Go to `/admin`, log in, open the **Products** tab, and choose **Add Product**. The form covers name, price (EUR), category, colour, sizes, image URLs, an optional badge, and related products. Saving writes the whole catalog to `jaatland_products`, so the change is per-browser and survives reloads.
+## Deploying to Vercel
 
-### Change the homepage copy
-
-Go to `/admin` > **Homepage**. The hero title, subtitle, and image come from here, as do the newsletter title and subtitle and the product selection for each category row. Clearing a hero field leaves the section empty rather than reverting to the default.
+1. Add a Postgres database to the project (Neon integration; choose an EU region). This sets `DATABASE_URL`.
+2. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` (long and unique) in the project's environment variables.
+3. Fill in `src/lib/legal-config.ts`.
+4. Deploy. `vercel-build` applies migrations, seeds an empty catalog, creates the admin account, then builds.
 
 ## Testing
 
-41 unit tests across five files. They cover pure logic rather than rendered components:
-
 ```bash
-npm run test:run      # orders (15), storage (10), rate-limit (6), shipping (5), utils (5)
+npm run test:run
 npm run typecheck
 npm run lint
 ```
 
-`storage.test.ts` runs under jsdom, declared inline with `// @vitest-environment jsdom`, because it exercises `window.localStorage`. The rest run in the default node environment. Component behaviour is checked by hand in the browser, not by tests.
+Unit tests cover orders, shipping, storage, rate limiting, validation and password hashing. `src/db/seed.test.ts` runs the real migrations and seed against an in-memory Postgres. Sign-in, the admin guard and admin saves were verified by hand in a browser; there is no automated end-to-end suite yet.
 
 ## Known gaps
 
-- **Admin-added products get a generic title until the page loads.** Server metadata only knows the seed catalog, so the first paint says `Product | Jaatland`; the page then sets the real title from the client store.
-- **Operator details are empty.** `src/lib/legal-config.ts` must be filled in before the site is public; see [Legal configuration](#legal-configuration).
+- **Operator details are empty** until `src/lib/legal-config.ts` is filled in.
+- **Orders live in the browser.** Checkout is simulated and orders are saved to `localStorage`, so the admin dashboard only sees orders placed in the same browser. Moving orders to the database together with Stripe test payments is the next step.
 - **The newsletter field only saves to the browser.** No address is collected and no email is sent.
-
-## Demo security
-
-Auth, the admin gate, and order history are all `localStorage` reads, and `ADMIN_PASSWORD` is compiled into the client bundle. That means:
-
-- Anyone can open DevTools, set `jaatland_user` to `{"email":"krishahir@jaatland.com"}`, and reach `/admin`.
-- Anyone can edit `jaatland_orders` to rewrite or fabricate an order.
-- Passwords are stored in plain text and shipped to every visitor.
-- Client-side checks are not authorization. There is no server to enforce anything.
-
-Use throwaway credentials, and never put real data in this build.
-
-## Notes for a real deployment
-
-Before this can take real orders it needs a database, server-side sessions and authorization, product pages rendered from that database rather than a bundled seed, and the checkout UI wired to the payment endpoint. The payment route already prices the order from a server-side catalog instead of trusting the client for an amount, but checkout still charges nothing and stores no card data.
+- **Rate limits are per server instance** (in memory). A shared store such as Upstash Redis would make them global.
+- **No email verification or password reset** yet; both need an email provider.
 
 ## License
 

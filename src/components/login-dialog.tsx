@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -12,8 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ADMIN_EMAIL, ADMIN_PASSWORD, LS_KEYS } from "@/lib/mock-data";
-import { readString, writeString } from "@/lib/storage";
+import { loginAction, registerAction } from "@/app/actions/auth";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password-policy";
 import { useStore } from "@/components/store-provider";
 
 interface LoginDialogProps {
@@ -23,7 +24,7 @@ interface LoginDialogProps {
 
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   const router = useRouter();
-  const { login } = useStore();
+  const { setSignedIn } = useStore();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -31,6 +32,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   });
   const [error, setError] = useState("");
   const [isCreateAccount, setIsCreateAccount] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const reset = () => {
     setForm({ email: "", password: "", confirmPassword: "" });
@@ -43,8 +45,9 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     onOpenChange(next);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
     setError("");
 
     const email = form.email.trim();
@@ -53,47 +56,37 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       return;
     }
 
+    // Quick checks for a friendlier form. The server validates again.
     if (isCreateAccount) {
-      if (form.password.length < 6) {
-        setError("Use at least 6 characters for your password");
+      if (form.password.length < MIN_PASSWORD_LENGTH) {
+        setError(`Use at least ${MIN_PASSWORD_LENGTH} characters for your password`);
         return;
       }
       if (form.password !== form.confirmPassword) {
         setError("Passwords do not match");
         return;
       }
+    }
 
-      const existingEmail = readString(LS_KEYS.USER_EMAIL);
-      if (existingEmail?.toLowerCase() === email.toLowerCase()) {
-        setError("Account already exists. Please login instead.");
+    setIsSubmitting(true);
+    try {
+      const credentials = { email, password: form.password };
+      const result = isCreateAccount
+        ? await registerAction(credentials)
+        : await loginAction(credentials);
+
+      if (!result.ok) {
+        setError(result.error);
         return;
       }
 
-      writeString(LS_KEYS.USER_EMAIL, email);
-      writeString(LS_KEYS.USER_PASSWORD, form.password);
-      login({ email });
+      setSignedIn(result.user);
       handleOpenChange(false);
-      return;
-    }
-
-    if (email === ADMIN_EMAIL && form.password === ADMIN_PASSWORD) {
-      writeString(LS_KEYS.ADMIN_EMAIL, email);
-      handleOpenChange(false);
-      router.push("/admin");
-      return;
-    }
-
-    const storedEmail = readString(LS_KEYS.USER_EMAIL);
-    const storedPassword = readString(LS_KEYS.USER_PASSWORD);
-
-    if (
-      storedEmail?.toLowerCase() === email.toLowerCase() &&
-      storedPassword === form.password
-    ) {
-      login({ email: storedEmail });
-      handleOpenChange(false);
-    } else {
-      setError("Invalid email or password");
+      if (result.user.role === "admin") router.push("/admin");
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -170,12 +163,21 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             </p>
           )}
 
-          <Button type="submit" className="w-full">
-            {isCreateAccount ? "Create Account" : "Login"}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting
+              ? "Please wait…"
+              : isCreateAccount
+                ? "Create Account"
+                : "Login"}
           </Button>
 
           <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-            Demo store — accounts are stored only in this browser.
+            {isCreateAccount ? "By creating an account you" : "You"} can read
+            how we handle your data in our{" "}
+            <Link href="/datenschutz" className="underline underline-offset-2">
+              Privacy Policy
+            </Link>
+            .
           </p>
 
           <div className="text-center">

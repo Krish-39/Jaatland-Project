@@ -157,7 +157,7 @@ export function StoreFooter({ onSelectCategory }: StoreFooterProps) {
                 <li>
                   <button
                     type="button"
-                    onClick={logout}
+                    onClick={() => void logout()}
                     className="transition-opacity hover:opacity-100 hover:underline"
                   >
                     Logout

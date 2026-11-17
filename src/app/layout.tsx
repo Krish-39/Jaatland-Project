@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { DemoBanner } from "@/components/demo-banner";
 import { LegalBar } from "@/components/legal-bar";
 import { StoreProvider } from "@/components/store-provider";
+import { getHomepageConfig, getProducts } from "@/lib/data/catalog";
 import { SITE_URL } from "@/lib/legal-config";
 import "./globals.css";
 
@@ -41,11 +42,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+// Catalog pages are rendered ahead of time and refreshed when an admin saves
+// a change (revalidatePath in the admin actions). The timer is a safety net.
+export const revalidate = 300;
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [products, homepageConfig] = await Promise.all([
+    getProducts(),
+    getHomepageConfig(),
+  ]);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -61,7 +71,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <DemoBanner />
-        <StoreProvider>
+        <StoreProvider products={products} homepageConfig={homepageConfig}>
           <div id="main-content">{children}</div>
         </StoreProvider>
         <LegalBar />

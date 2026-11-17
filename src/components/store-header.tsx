@@ -34,6 +34,7 @@ import {
   Heart,
   SortDesc,
   User,
+  Settings,
   LogOut,
   Package,
   Menu,
@@ -585,10 +586,20 @@ export function StoreHeader({
                   <div className="px-2 py-1.5 text-sm font-medium">
                     {user.email}
                   </div>
+                  <DropdownMenuItem onClick={() => router.push("/account")}>
+                    <User className="mr-2 h-4 w-4" />
+                    Your Account
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push("/orders")}>
                     <Package className="mr-2 h-4 w-4" />
                     Your Orders
                   </DropdownMenuItem>
+                  {user.role === "admin" && (
+                    <DropdownMenuItem onClick={() => router.push("/admin")}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
@@ -701,6 +712,28 @@ export function StoreHeader({
               {user ? (
                 <>
                   <div className="px-2 text-sm font-medium">{user.email}</div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      router.push("/account");
+                    }}
+                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    <User className="h-4 w-4" /> My Account
+                  </button>
+                  {user.role === "admin" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        router.push("/admin");
+                      }}
+                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                    >
+                      <Settings className="h-4 w-4" /> Admin Dashboard
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {

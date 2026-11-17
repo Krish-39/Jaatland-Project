@@ -9,12 +9,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  DEFAULT_HOMEPAGE_CONFIG,
-  DEFAULT_PRODUCTS,
-  LS_KEYS,
-} from "@/lib/mock-data";
-import { readArray, readJson, removeStored, writeJson } from "@/lib/storage";
+import { logoutAction, type AuthUser } from "@/app/actions/auth";
+import { LEGACY_LS_KEYS, LS_KEYS } from "@/lib/mock-data";
+import { readArray, removeStored, writeJson } from "@/lib/storage";
 import type { CartLine } from "@/lib/orders";
 import type { HomepageConfig, Product } from "@/lib/types";
 
@@ -26,12 +23,12 @@ interface Toast {
 }
 
 interface StoreContextValue {
+  /** True once cart and wishlist have been read from browser storage. */
   isLoaded: boolean;
 
+  /** Catalog and homepage copy, rendered on the server from the database. */
   products: Product[];
-  saveProducts: (products: Product[]) => void;
   homepageConfig: HomepageConfig;
-  saveHomepageConfig: (config: HomepageConfig) => void;
 
   cart: CartLine[];
   cartCount: number;
@@ -44,47 +41,63 @@ interface StoreContextValue {
   toggleWishlist: (id: string) => void;
   isWishlisted: (id: string) => boolean;
 
-  user: { email: string } | null;
-  login: (user: { email: string }) => void;
-  logout: () => void;
+  /** Signed-in user as reported by the server session; null for guests. */
+  user: AuthUser | null;
+  /** Call after a successful login or registration server action. */
+  setSignedIn: (user: AuthUser) => void;
+  logout: () => Promise<void>;
 
   notify: (message: string) => void;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
-export function StoreProvider({ children }: { children: React.ReactNode }) {
+interface StoreProviderProps {
+  products: Product[];
+  homepageConfig: HomepageConfig;
+  children: React.ReactNode;
+}
+
+export function StoreProvider({
+  products,
+  homepageConfig,
+  children,
+}: StoreProviderProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
-  const [homepageConfig, setHomepageConfig] =
-    useState<HomepageConfig>(DEFAULT_HOMEPAGE_CONFIG);
   const [cart, setCart] = useState<CartLine[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<number | null>(null);
 
-  // Hydrate once on the client. Defaults are rendered on the server.
+  // Cart and wishlist live in this browser. Read them once after mount.
   useEffect(() => {
-    const storedProducts = readJson<Product[] | null>(LS.PRODUCTS, null);
-    if (Array.isArray(storedProducts)) setProducts(storedProducts);
-
-    const storedHomepage = readJson<Partial<HomepageConfig> | null>(LS.HOMEPAGE, null);
-    if (storedHomepage) {
-      setHomepageConfig((prev) => ({
-        ...prev,
-        ...storedHomepage,
-        homepageProducts: storedHomepage.homepageProducts || prev.homepageProducts,
-      }));
-    }
+    // Earlier builds kept accounts (with readable passwords), the admin flag
+    // and catalog edits in localStorage. Remove those leftovers.
+    LEGACY_LS_KEYS.forEach(removeStored);
 
     setCart(readArray<CartLine>(LS.CART));
     setWishlist(readArray<string>(LS.WISHLIST));
-
-    const storedUser = readJson<{ email?: string } | null>(LS.USER, null);
-    if (storedUser?.email) setUser({ email: storedUser.email });
-
     setIsLoaded(true);
+  }, []);
+
+  // Ask the server who is signed in. The session lives in an httpOnly cookie
+  // that scripts cannot read, so this is the only way the UI can know.
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: { user: AuthUser | null } | null) => {
+        if (!cancelled && data?.user) setUser(data.user);
+      })
+      .catch(() => {
+        // Offline or server error: stay signed out in the UI.
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -94,15 +107,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoaded) writeJson(LS.WISHLIST, wishlist);
   }, [wishlist, isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    if (user) {
-      writeJson(LS.USER, user);
-    } else {
-      removeStored(LS.USER);
-    }
-  }, [user, isLoaded]);
 
   useEffect(() => {
     return () => {
@@ -115,26 +119,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (toastTimer.current) window.clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToast(null), 2600);
   }, []);
-
-  const saveProducts = useCallback(
-    (next: Product[]) => {
-      setProducts(next);
-      if (!writeJson(LS.PRODUCTS, next)) {
-        notify("Could not save products — browser storage is full or disabled.");
-      }
-    },
-    [notify]
-  );
-
-  const saveHomepageConfig = useCallback(
-    (next: HomepageConfig) => {
-      setHomepageConfig(next);
-      if (!writeJson(LS.HOMEPAGE, next)) {
-        notify("Could not save homepage settings — browser storage is full or disabled.");
-      }
-    },
-    [notify]
-  );
 
   const addToCart = useCallback(
     (product: Product, size?: string) => {
@@ -187,15 +171,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [wishlist]
   );
 
-  const login = useCallback((next: { email: string }) => {
-    setUser({ email: next.email });
-  }, []);
+  const setSignedIn = useCallback((next: AuthUser) => setUser(next), []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    removeStored(LS.USER_EMAIL);
-    removeStored(LS.USER_PASSWORD);
-  }, []);
+  const logout = useCallback(async () => {
+    try {
+      await logoutAction();
+      setUser(null);
+    } catch {
+      notify("Could not sign out. Please try again.");
+    }
+  }, [notify]);
 
   const cartCount = useMemo(
     () => cart.reduce((sum, item) => sum + item.qty, 0),
@@ -215,9 +200,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     () => ({
       isLoaded,
       products,
-      saveProducts,
       homepageConfig,
-      saveHomepageConfig,
       cart,
       cartCount,
       subtotal,
@@ -228,16 +211,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleWishlist,
       isWishlisted,
       user,
-      login,
+      setSignedIn,
       logout,
       notify,
     }),
     [
       isLoaded,
       products,
-      saveProducts,
       homepageConfig,
-      saveHomepageConfig,
       cart,
       cartCount,
       subtotal,
@@ -248,7 +229,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleWishlist,
       isWishlisted,
       user,
-      login,
+      setSignedIn,
       logout,
       notify,
     ]

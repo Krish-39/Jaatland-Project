@@ -98,28 +98,30 @@ export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
   },
 };
 
-// LocalStorage keys
+// LocalStorage keys. Only per-browser convenience state lives here; the
+// catalog, accounts and sessions are stored on the server.
 export const LS_KEYS = {
   CART: 'jaatland_cart',
   WISHLIST: 'jaatland_wishlist',
   THEME: 'jaatland_theme',
   PRICE: 'jaatland_price',
   SORT: 'jaatland_sort',
-  USER: 'jaatland_user',
   /** Email used at the last guest checkout, so guests can see their orders. */
   BUYER_EMAIL: 'jaatland_buyer_email',
   ORDERS: 'jaatland_orders',
-  // v2: overrides saved by earlier builds referenced hotlinked third-party
-  // images and retired copy, so those are deliberately not read back.
-  PRODUCTS: 'jaatland_products_v2',
-  HOMEPAGE: 'jaatland_homepage_v2',
   NEWSLETTER: 'jaatland_newsletter_email',
-  ADMIN_EMAIL: 'jaatland_admin_email',
-  USER_EMAIL: 'jaatland_user_email',
-  USER_PASSWORD: 'jaatland_user_password',
 } as const;
 
-// Admin credentials
-export const ADMIN_EMAIL = 'krishahir@jaatland.com';
-export const ADMIN_PASSWORD = '1234';
-
+// Keys written by earlier builds that must no longer exist in a visitor's
+// browser: local accounts with readable passwords, the client-side admin
+// flag, and catalog overrides. The store deletes them on load.
+export const LEGACY_LS_KEYS = [
+  'jaatland_user',
+  'jaatland_user_email',
+  'jaatland_user_password',
+  'jaatland_admin_email',
+  'jaatland_products',
+  'jaatland_products_v2',
+  'jaatland_homepage',
+  'jaatland_homepage_v2',
+] as const;

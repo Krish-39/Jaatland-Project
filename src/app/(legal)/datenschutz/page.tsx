@@ -30,11 +30,18 @@ export default function PrivacyPolicyPage() {
 
       <LegalSection heading="2. Summary">
         <ul>
-          <li>This site sets no cookies and uses no analytics, advertising or tracking tools.</li>
+          <li>This site uses no analytics, advertising or tracking tools.</li>
           <li>
-            Your cart, wishlist, demo account, demo orders and display
-            preferences are stored only in your own browser and are not
-            transmitted to us.
+            The only cookie is a login cookie, set when you sign in to an
+            account.
+          </li>
+          <li>
+            If you create an account, we store your email address and a
+            protected (hashed) form of your password.
+          </li>
+          <li>
+            Your cart, wishlist, demo orders and display preferences are stored
+            only in your own browser and are not transmitted to us.
           </li>
           <li>
             Our hosting provider processes technical connection data (such as
@@ -63,7 +70,53 @@ export default function PrivacyPolicyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="4. Data stored in your browser (local storage)">
+      <LegalSection heading="4. Customer account">
+        <p>
+          You can browse and use the demo checkout without an account. If you
+          create one, we process:
+        </p>
+        <ul>
+          <li>your email address,</li>
+          <li>
+            your password, stored only as a salted hash (scrypt) from which the
+            password cannot be read,
+          </li>
+          <li>the date the account was created, and</li>
+          <li>your active login sessions (creation and expiry time).</li>
+        </ul>
+        <p>
+          The legal basis is the performance of the user agreement you enter
+          into by registering (Art. 6 (1) (b) GDPR). We keep this data until
+          you delete your account. You can download your data and delete your
+          account at any time on the &quot;Your account&quot; page; deleting
+          the account erases it and all of its sessions immediately.
+        </p>
+        <p>
+          Account data is stored in a PostgreSQL database operated for us by
+          Neon (Neon, Inc., USA) as our processor
+          under a data processing agreement. Where data is processed outside
+          the EU, the transfer is covered by the EU-U.S. Data Privacy Framework
+          and, where applicable, the EU Standard Contractual Clauses.
+        </p>
+        <p>
+          To protect accounts against password guessing, the number of login
+          and registration attempts per IP address and per account is limited
+          for a short time (Art. 6 (1) (f) GDPR). These counters are held in
+          memory only and are not stored permanently.
+        </p>
+      </LegalSection>
+
+      <LegalSection heading="5. Cookies">
+        <p>
+          When you sign in, we set one cookie that contains a random session
+          identifier. It keeps you signed in for up to 30 days, or until you
+          sign out, and cannot be read by scripts. It is strictly necessary to
+          provide the login you requested, so no consent is required (§ 25 (2)
+          no. 2 TDDDG). We set no other cookies.
+        </p>
+      </LegalSection>
+
+      <LegalSection heading="6. Data stored in your browser (local storage)">
         <p>
           The site stores the following information in your browser&apos;s
           local storage so the functions you use keep working. It stays on your
@@ -73,15 +126,10 @@ export default function PrivacyPolicyPage() {
           <li>Cart contents and wishlist</li>
           <li>Display preferences: light or dark theme, sort order, price filter</li>
           <li>
-            Demo account: the email address and password you enter when you
-            create a demo account, and whether you are signed in
-          </li>
-          <li>
             Demo orders: the name, email address, delivery address and items
             you enter at checkout
           </li>
           <li>The email address you enter in the newsletter field</li>
-          <li>Catalogue and homepage changes made in the admin area</li>
         </ul>
         <p>
           Storing this information is strictly necessary to provide functions
@@ -89,13 +137,9 @@ export default function PrivacyPolicyPage() {
           no. 2 TDDDG). You can delete it at any time by clearing the site data
           for this website in your browser settings.
         </p>
-        <p>
-          Because the demo account password is kept in your browser in
-          readable form, please do not use a password you use anywhere else.
-        </p>
       </LegalSection>
 
-      <LegalSection heading="5. Checkout and payment">
+      <LegalSection heading="7. Checkout and payment">
         <p>
           Checkout is simulated. The card details you type into the checkout
           form are not transmitted and not stored. No payment provider receives
@@ -103,7 +147,7 @@ export default function PrivacyPolicyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="6. Newsletter">
+      <LegalSection heading="8. Newsletter">
         <p>
           The newsletter field is part of the demonstration. The address you
           enter is saved only in your browser. We do not receive it and send no
@@ -111,7 +155,7 @@ export default function PrivacyPolicyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="7. Fonts and images">
+      <LegalSection heading="9. Fonts and images">
         <p>
           Fonts and product images are served from this website itself. Your
           browser does not contact font or image servers of third parties when
@@ -119,7 +163,7 @@ export default function PrivacyPolicyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="8. Contacting us">
+      <LegalSection heading="10. Contacting us">
         <p>
           If you email us, we process your message and contact details to deal
           with your request (Art. 6 (1) (f) GDPR, or Art. 6 (1) (b) GDPR where
@@ -128,7 +172,7 @@ export default function PrivacyPolicyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="9. Your rights">
+      <LegalSection heading="11. Your rights">
         <p>Under the GDPR you have the right to:</p>
         <ul>
           <li>access the personal data we hold about you (Art. 15)</li>
@@ -143,15 +187,16 @@ export default function PrivacyPolicyPage() {
           <li>withdraw any consent you have given, with effect for the future (Art. 7 (3))</li>
         </ul>
         <p>
-          To exercise these rights, contact us using the details above. You
-          also have the right to lodge a complaint with a data protection
+          You can use the access, portability and erasure rights for your
+          account yourself on the &quot;Your account&quot; page. For anything
+          else, contact us using the details above. You also have the right to lodge a complaint with a data protection
           supervisory authority, in particular in the EU member state where you
           live or work or where you believe an infringement took place (Art. 77
           GDPR).
         </p>
       </LegalSection>
 
-      <LegalSection heading="10. Changes to this policy">
+      <LegalSection heading="12. Changes to this policy">
         <p>
           We update this policy whenever the site&apos;s data processing
           changes. The date at the top shows the current version.

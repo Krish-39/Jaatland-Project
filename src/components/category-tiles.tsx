@@ -1,60 +1,65 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useFilters } from "@/components/filters-provider";
+import { ProductImage } from "@/components/product-image";
 import { useStore } from "@/components/store-provider";
 import { CATEGORIES } from "@/lib/mock-data";
+import { getImageUrl } from "@/lib/utils";
 
-const BLURB: Record<string, string> = {
-  Men: "Everyday essentials for men",
-  Women: "Everyday essentials for women",
-  Unisex: "Designed to be worn by everyone",
-  Accessories: "Bags and everyday accessories",
-};
-
-/** Four big tiles that jump straight into a category. */
+/** Image tiles that jump straight into a category. */
 export function CategoryTiles() {
   const { setCategory } = useFilters();
   const { products } = useStore();
 
+  const tiles = CATEGORIES.map((category) => {
+    const inCategory = products.filter((product) => product.category === category);
+    return { category, count: inCategory.length, image: inCategory[0] ? getImageUrl(inCategory[0]) : "" };
+  }).filter((tile) => tile.count > 0);
+
   return (
-    <section aria-labelledby="shop-by-category" className="scroll-mt-24">
-      <h2 id="shop-by-category" className="font-display text-4xl md:text-5xl">
-        Shop by category
-      </h2>
-      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {CATEGORIES.map((category, index) => {
-          const count = products.filter((product) => product.category === category).length;
-          return (
-            <button
-              key={category}
-              type="button"
-              onClick={() => {
-                setCategory(category);
-                document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className={`lift group relative flex min-h-36 flex-col justify-between overflow-hidden rounded-2xl border-2 border-ink p-4 text-left transition-colors md:min-h-44 md:p-5 ${
-                index % 2 === 0 ? "bg-background" : "bg-slate-100 dark:bg-slate-900"
-              } hover:bg-brand hover:text-[#1a1815]`}
-            >
-              <span className="flex items-start justify-between gap-2">
-                <span className="font-display text-[1.3rem] sm:text-3xl md:text-4xl">
-                  {category}
-                </span>
-                <ArrowUpRight
-                  className="hidden h-6 w-6 shrink-0 transition-transform sm:block duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </span>
-              <span className="text-sm">
-                {BLURB[category]}
-                <span className="mt-1 block text-xs font-bold uppercase tracking-wider opacity-70">
+    <section aria-labelledby="shop-by-category">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <h2 id="shop-by-category" className="font-display text-2xl md:text-3xl">
+          Shop by category
+        </h2>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+        {tiles.map(({ category, count, image }) => (
+          <button
+            key={category}
+            type="button"
+            onClick={() => {
+              setCategory(category);
+              document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted text-left"
+          >
+            <ProductImage
+              src={image}
+              alt=""
+              fill
+              sizes="(max-width: 1024px) 50vw, 25vw"
+              className="transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            />
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"
+            />
+            <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 text-white md:p-5">
+              <span>
+                <span className="block text-lg font-semibold md:text-xl">{category}</span>
+                <span className="block text-xs text-white/80">
                   {count} {count === 1 ? "item" : "items"}
                 </span>
               </span>
-            </button>
-          );
-        })}
+              <ArrowRight
+                className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+                aria-hidden="true"
+              />
+            </span>
+          </button>
+        ))}
       </div>
     </section>
   );

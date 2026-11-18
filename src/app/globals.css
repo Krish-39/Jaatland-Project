@@ -8,41 +8,36 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-display);
 
-  /* Brand: signal orange and sticker lime, always paired with ink text. */
-  --color-brand: #ff5b1f;
-  --color-sticker: #d4f25a;
+  /* Neutral retail palette (stone). One restrained accent colour is used
+     only for small highlights such as the cart count and sale states. */
+  --color-brand: #9a3412;
   --color-ink: var(--foreground);
   --color-paper: var(--background);
 
-  /* Warm "paper and ink" neutrals. Replacing Tailwind's cool slate and gray
-     scales keeps every existing utility class on the new palette. */
-  --color-white: #fbf8f1;
-  --color-slate-50: #f7f3ea;
-  --color-slate-100: #efe9dd;
-  --color-slate-200: #e2dacb;
-  --color-slate-300: #cdc3b1;
-  --color-slate-400: #9e9484;
-  --color-slate-500: #6b6357;
-  --color-slate-600: #544d43;
-  --color-slate-700: #3d3832;
-  --color-slate-800: #292520;
-  --color-slate-900: #1a1815;
-  --color-slate-950: #12110f;
-  --color-gray-50: #f7f3ea;
-  --color-gray-100: #efe9dd;
-  --color-gray-200: #e2dacb;
-  --color-gray-300: #cdc3b1;
-  --color-gray-400: #9e9484;
-  --color-gray-500: #6b6357;
-  --color-gray-600: #544d43;
-  --color-gray-700: #3d3832;
-  --color-gray-800: #292520;
-  --color-gray-900: #1a1815;
+  --color-slate-50: #fafaf9;
+  --color-slate-100: #f5f5f4;
+  --color-slate-200: #e7e5e4;
+  --color-slate-300: #d6d3d1;
+  --color-slate-400: #a8a29e;
+  --color-slate-500: #78716c;
+  --color-slate-600: #57534e;
+  --color-slate-700: #44403c;
+  --color-slate-800: #292524;
+  --color-slate-900: #1c1917;
+  --color-slate-950: #0c0a09;
+  --color-gray-50: #fafaf9;
+  --color-gray-100: #f5f5f4;
+  --color-gray-200: #e7e5e4;
+  --color-gray-300: #d6d3d1;
+  --color-gray-400: #a8a29e;
+  --color-gray-500: #78716c;
+  --color-gray-600: #57534e;
+  --color-gray-700: #44403c;
+  --color-gray-800: #292524;
+  --color-gray-900: #1c1917;
 
-  --animate-marquee: marquee 32s linear infinite;
-  --animate-spin-slow: spin 18s linear infinite;
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -79,70 +74,67 @@
 }
 
 :root {
-  --radius: 0.875rem;
-  --background: #fbf8f1;
-  --foreground: #1a1815;
-  --card: #fbf8f1;
-  --card-foreground: #1a1815;
-  --popover: #fbf8f1;
-  --popover-foreground: #1a1815;
-  --primary: #1a1815;
-  --primary-foreground: #fbf8f1;
-  --secondary: #efe9dd;
-  --secondary-foreground: #1a1815;
-  --muted: #efe9dd;
-  --muted-foreground: #6b6357;
-  --accent: #efe9dd;
-  --accent-foreground: #1a1815;
-  --destructive: #c4321a;
-  --border: #cdc3b1;
-  --input: #1a1815;
-  --ring: #ff5b1f;
-  --chart-1: #ff5b1f;
-  --chart-2: #1a1815;
-  --chart-3: #d4f25a;
-  --chart-4: #9e9484;
-  --chart-5: #544d43;
-  --sidebar: #f7f3ea;
-  --sidebar-foreground: #1a1815;
-  --sidebar-primary: #1a1815;
-  --sidebar-primary-foreground: #fbf8f1;
-  --sidebar-accent: #efe9dd;
-  --sidebar-accent-foreground: #1a1815;
-  --sidebar-border: #cdc3b1;
-  --sidebar-ring: #ff5b1f;
-  /* Hard offset shadow colour for the "press" and card effects. */
-  --shadow-ink: #1a1815;
+  --radius: 0.5rem;
+  --background: #ffffff;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #1c1917;
+  --primary-foreground: #fafaf9;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1917;
+  --muted: #f5f5f4;
+  --muted-foreground: #57534e;
+  --accent: #f5f5f4;
+  --accent-foreground: #1c1917;
+  --destructive: #b91c1c;
+  --border: #e7e5e4;
+  --input: #d6d3d1;
+  --ring: #1c1917;
+  --chart-1: #1c1917;
+  --chart-2: #78716c;
+  --chart-3: #a8a29e;
+  --chart-4: #d6d3d1;
+  --chart-5: #9a3412;
+  --sidebar: #fafaf9;
+  --sidebar-foreground: #1c1917;
+  --sidebar-primary: #1c1917;
+  --sidebar-primary-foreground: #fafaf9;
+  --sidebar-accent: #f5f5f4;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #e7e5e4;
+  --sidebar-ring: #1c1917;
 }
 
 .dark {
-  --background: #12110f;
-  --foreground: #efe9dd;
-  --card: #1a1815;
-  --card-foreground: #efe9dd;
-  --popover: #1a1815;
-  --popover-foreground: #efe9dd;
-  --primary: #efe9dd;
-  --primary-foreground: #12110f;
-  --secondary: #292520;
-  --secondary-foreground: #efe9dd;
-  --muted: #292520;
-  --muted-foreground: #b3a99a;
-  --accent: #292520;
-  --accent-foreground: #efe9dd;
-  --destructive: #ff7a5c;
-  --border: #3d3832;
-  --input: #efe9dd;
-  --ring: #ff5b1f;
-  --sidebar: #1a1815;
-  --sidebar-foreground: #efe9dd;
-  --sidebar-primary: #ff5b1f;
-  --sidebar-primary-foreground: #12110f;
-  --sidebar-accent: #292520;
-  --sidebar-accent-foreground: #efe9dd;
-  --sidebar-border: #3d3832;
-  --sidebar-ring: #ff5b1f;
-  --shadow-ink: #efe9dd;
+  --background: #0c0a09;
+  --foreground: #fafaf9;
+  --card: #1c1917;
+  --card-foreground: #fafaf9;
+  --popover: #1c1917;
+  --popover-foreground: #fafaf9;
+  --primary: #fafaf9;
+  --primary-foreground: #1c1917;
+  --secondary: #292524;
+  --secondary-foreground: #fafaf9;
+  --muted: #1c1917;
+  --muted-foreground: #a8a29e;
+  --accent: #292524;
+  --accent-foreground: #fafaf9;
+  --destructive: #f87171;
+  --border: #292524;
+  --input: #44403c;
+  --ring: #fafaf9;
+  --sidebar: #1c1917;
+  --sidebar-foreground: #fafaf9;
+  --sidebar-primary: #fafaf9;
+  --sidebar-primary-foreground: #1c1917;
+  --sidebar-accent: #292524;
+  --sidebar-accent-foreground: #fafaf9;
+  --sidebar-border: #292524;
+  --sidebar-ring: #fafaf9;
 }
 
 @layer base {
@@ -151,95 +143,47 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
   }
   /* One clearly visible keyboard focus style everywhere. */
   :focus-visible {
-    outline: 3px solid var(--ring);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
-  }
-  ::selection {
-    background: var(--color-sticker);
-    color: #1a1815;
   }
 }
 
 @layer components {
-  /* Display type: condensed, uppercase, tight. */
+  /* Headline style: one typeface, tight tracking, no decoration. */
   .font-display {
-    font-family: var(--font-display), var(--font-geist-sans), sans-serif;
-    font-weight: 400;
-    letter-spacing: 0.01em;
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+  }
+
+  /* Small uppercase label above headings and on product images. */
+  .eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    line-height: 0.92;
   }
-
-  /* Hard offset shadow that "presses down" when clicked. */
-  .press {
-    box-shadow: 4px 4px 0 0 var(--shadow-ink);
-    transition: transform 120ms ease, box-shadow 120ms ease, background-color 150ms ease;
-  }
-  .press:hover:not(:disabled) {
-    transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0 0 var(--shadow-ink);
-  }
-  .press:active:not(:disabled) {
-    transform: translate(4px, 4px);
-    box-shadow: 0 0 0 0 var(--shadow-ink);
-  }
-  .press-sm {
-    box-shadow: 3px 3px 0 0 var(--shadow-ink);
-  }
-  .press-sm:hover:not(:disabled) {
-    box-shadow: 4px 4px 0 0 var(--shadow-ink);
-  }
-
-  /* Outlined card that lifts on hover. */
-  .lift {
-    transition: transform 180ms ease, box-shadow 180ms ease;
-  }
-  .lift:hover,
-  .lift:focus-within {
-    transform: translate(-3px, -3px);
-    box-shadow: 6px 6px 0 0 var(--shadow-ink);
-  }
-
-  /* Tilted sticker label. */
-  .sticker {
+  .label-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    border: 2px solid #1a1815;
-    background: var(--color-sticker);
-    color: #1a1815;
-    border-radius: 999px;
-    padding: 0.125rem 0.625rem;
-    font-size: 0.75rem;
-    font-weight: 700;
+    border-radius: 0.25rem;
+    background: rgb(255 255 255 / 0.92);
+    color: #1c1917;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    transform: rotate(-3deg);
-  }
-
-  /* Dotted paper background. */
-  .dot-grid {
-    background-image: radial-gradient(
-      color-mix(in oklab, var(--foreground) 18%, transparent) 1px,
-      transparent 1px
-    );
-    background-size: 18px 18px;
   }
 }
 
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* Respect visitors who ask for less motion: no marquee, spin or lifts. */
+/* Respect visitors who ask for less motion. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

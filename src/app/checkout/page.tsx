@@ -176,7 +176,7 @@ export default function CheckoutPage() {
               </svg>
             </div>
           </div>
-          <h1 className="mb-2 font-display text-4xl">Order confirmed</h1>
+          <h1 className="mb-2 font-display text-2xl md:text-3xl">Order confirmed</h1>
           <p className="mb-4 text-gray-600 dark:text-gray-400">
             Thank you for your order.
           </p>
@@ -191,7 +191,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 font-display text-4xl">Your cart is empty</h1>
+          <h1 className="mb-4 font-display text-2xl md:text-3xl">Your cart is empty</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             Add some products to your cart to proceed with checkout.
           </p>
@@ -203,7 +203,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 py-8">
         <Button
           variant="ghost"
           onClick={() => router.push("/")}
@@ -213,7 +213,7 @@ export default function CheckoutPage() {
           Back to store
         </Button>
 
-        <h1 className="mb-8 font-display text-5xl">Checkout</h1>
+        <h1 className="mb-8 font-display text-3xl md:text-4xl">Checkout</h1>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <div>
@@ -332,7 +332,7 @@ export default function CheckoutPage() {
                       secure payment page to pay by card. Card details are
                       entered there and never reach this site.
                     </p>
-                    <p className="rounded-2xl border-2 border-[#1a1815] bg-sticker text-[#1a1815] p-3">
+                    <p className="rounded-md border bg-muted text-foreground p-3">
                       <span className="font-medium">Stripe test mode:</span> no
                       real money is charged and nothing is shipped. Pay with the
                       test card <code>4242 4242 4242 4242</code>, any future
@@ -340,7 +340,7 @@ export default function CheckoutPage() {
                     </p>
                   </div>
                 ) : (
-                  <p className="rounded-2xl border-2 border-[#1a1815] bg-sticker text-[#1a1815] p-3 text-sm">
+                  <p className="rounded-md border bg-muted text-foreground p-3 text-sm">
                     <span className="font-medium">Demo checkout:</span> payment
                     is not connected in this deployment, so the order is placed
                     without a payment step. Nothing is charged or shipped.
@@ -380,7 +380,7 @@ export default function CheckoutPage() {
                   directly above the order button, on every screen size. */}
               <section
                 aria-labelledby="order-recap-heading"
-                className="rounded-2xl border-2 border-ink p-4 text-sm"
+                className="rounded-lg border p-4 text-sm"
               >
                 <h2 id="order-recap-heading" className="mb-2 font-semibold">
                   Your order
@@ -444,7 +444,7 @@ export default function CheckoutPage() {
           </div>
 
           <div>
-            <div className="sticky top-24 rounded-2xl border-2 border-ink bg-slate-100 p-6 shadow-[6px_6px_0_0_var(--shadow-ink)] dark:bg-slate-900">
+            <div className="sticky top-24 rounded-lg border bg-muted/50 p-6">
               <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
               <div className="space-y-4">
                 {cartItems.map((item) => (

@@ -99,14 +99,14 @@ export function AdminPanel({ stats }: { stats: AdminStats }) {
 
   return (
     <div className="min-h-[60vh] bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 py-8">
         <Button variant="ghost" onClick={() => router.push("/")} className="mb-6 gap-2">
           <ArrowLeft className="h-4 w-4" />
-          Back to Store
+          Back to store
         </Button>
 
         <div className="flex items-center justify-between mb-8">
-          <h1 className="font-display text-5xl">Admin Dashboard</h1>
+          <h1 className="font-display text-3xl md:text-4xl">Admin Dashboard</h1>
           <Button
             variant="outline"
             onClick={async () => {
@@ -247,7 +247,7 @@ function DashboardTab({ stats }: { stats: AdminStats }) {
               <CardTitle className="text-sm font-medium">{tile.label}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="font-display text-4xl">{tile.value}</div>
+              <div className="text-3xl font-semibold tabular-nums">{tile.value}</div>
             </CardContent>
           </Card>
         ))}

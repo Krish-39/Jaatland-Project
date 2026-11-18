@@ -94,7 +94,7 @@ export function ProductDetail({ id }: { id: string }) {
     return (
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 font-display text-4xl">Product not found</h1>
+          <h1 className="mb-4 font-display text-2xl md:text-3xl">Product not found</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             The product you&apos;re looking for doesn&apos;t exist.
           </p>
@@ -115,7 +115,7 @@ export function ProductDetail({ id }: { id: string }) {
 
   return (
     <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 py-8">
         <Button variant="ghost" onClick={() => router.back()} className="mb-6 gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -123,7 +123,7 @@ export function ProductDetail({ id }: { id: string }) {
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           <div className="space-y-4">
-            <div className="relative aspect-square overflow-hidden rounded-[2rem] border-2 border-ink bg-slate-200 shadow-[8px_8px_0_0_var(--shadow-ink)] dark:bg-slate-800">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-muted">
               <ProductImage
                 src={images[activeImageIndex]}
                 alt={product.name}
@@ -164,19 +164,19 @@ export function ProductDetail({ id }: { id: string }) {
           <div className="space-y-6">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                {product.badge && <span className="sticker">{product.badge}</span>}
+                {product.badge && <Badge variant="secondary">{product.badge}</Badge>}
                 <Badge variant="outline">{product.category}</Badge>
               </div>
-              <h1 className="font-display mt-3 text-5xl md:text-6xl">
+              <h1 className="font-display mt-3 text-3xl md:text-4xl">
                 {product.name}
               </h1>
-              <div className="mt-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+              <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <span>{product.color}</span>
               </div>
             </div>
 
             <div>
-              <div className="font-display text-5xl">
+              <div className="text-2xl font-semibold tabular-nums">
                 {formatCurrency(product.price)}
               </div>
               <PriceNote className="mt-1 text-sm" />
@@ -201,7 +201,7 @@ export function ProductDetail({ id }: { id: string }) {
             <Separator />
 
             <div>
-              <h2 className="mb-3 text-sm font-bold uppercase tracking-wider">Select size</h2>
+              <h2 className="mb-3 text-sm font-medium">Select size</h2>
               {needsSize && (
                 <p id="size-hint" className="-mt-1 mb-3 text-sm text-slate-600 dark:text-slate-400">
                   Choose a size to add this item to your cart.
@@ -246,7 +246,7 @@ export function ProductDetail({ id }: { id: string }) {
               >
                 <Heart
                   className={`h-5 w-5 ${
-                    isWishlisted ? "fill-brand text-brand" : ""
+                    isWishlisted ? "fill-current" : ""
                   }`}
                 />
               </Button>
@@ -259,7 +259,7 @@ export function ProductDetail({ id }: { id: string }) {
               >
                 {shareCopied ? (
                   <>
-                    <Check className="h-5 w-5 text-[#2f7d32] dark:text-sticker" aria-hidden="true" />
+                    <Check className="h-5 w-5" aria-hidden="true" />
                     <span className="sr-only">Link copied</span>
                   </>
                 ) : (
@@ -270,7 +270,7 @@ export function ProductDetail({ id }: { id: string }) {
 
             <Separator />
 
-            <div className="space-y-2 rounded-2xl border-2 border-ink p-4 text-sm">
+            <div className="space-y-2.5 text-sm">
               <div className="flex justify-between">
                 <span className="font-medium">Category</span>
                 <span>{product.category}</span>
@@ -289,7 +289,7 @@ export function ProductDetail({ id }: { id: string }) {
 
         {similarProducts.length > 0 && (
           <div className="mt-20">
-            <h2 className="font-display mb-8 border-b-2 border-ink pb-4 text-4xl md:text-5xl">
+            <h2 className="font-display mb-6 text-2xl md:text-3xl">
               You may also like
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -297,9 +297,9 @@ export function ProductDetail({ id }: { id: string }) {
                 <Link
                   key={similar.id}
                   href={`/product/${similar.id}`}
-                  className="lift group overflow-hidden rounded-2xl border-2 border-ink bg-card"
+                  className="group block"
                 >
-                  <div className="relative aspect-[4/5] overflow-hidden border-b-2 border-ink bg-slate-200 dark:bg-slate-800">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-muted">
                     <ProductImage
                       src={getImageUrl(similar)}
                       alt={similar.name}
@@ -308,18 +308,18 @@ export function ProductDetail({ id }: { id: string }) {
                       className="transition-transform duration-300 group-hover:scale-[1.03]"
                     />
                     {similar.badge && (
-                      <span className="sticker absolute left-2 top-2">
+                      <span className="label-chip absolute left-2 top-2">
                         {similar.badge}
                       </span>
                     )}
                   </div>
-                  <div className="p-3">
-                    <h3 className="font-bold">{similar.name}</h3>
+                  <div className="pt-3">
+                    <h3 className="text-[0.9375rem] font-medium group-hover:underline">{similar.name}</h3>
                     <div className="mt-1 flex items-center justify-between">
-                      <span className="font-display text-xl">
+                      <span className="text-[0.9375rem] font-semibold tabular-nums">
                         {formatCurrency(similar.price)}
                       </span>
-                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                      <span className="text-sm text-muted-foreground">
                         {similar.category}
                       </span>
                     </div>

@@ -22,12 +22,12 @@ export default async function AccountPage() {
           className="mb-6 inline-flex items-center gap-2 text-sm hover:underline"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to Store
+          Back to store
         </Link>
 
-        <h1 className="font-display text-5xl">Your account</h1>
+        <h1 className="font-display text-3xl md:text-4xl">Your account</h1>
 
-        <dl className="mt-6 space-y-3 rounded-2xl border-2 border-ink p-4 text-sm">
+        <dl className="mt-6 space-y-3 rounded-lg border p-5 text-sm">
           <div className="flex justify-between gap-4">
             <dt className="opacity-70">Email</dt>
             <dd className="font-medium">{user.email}</dd>

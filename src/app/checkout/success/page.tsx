@@ -65,7 +65,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
       {(outcome === "paid" || outcome === "processing") && <ClearCartOnMount />}
       <main className="mx-auto max-w-md px-4 py-16 text-center">
         <div className="mb-6 flex justify-center">{view.icon}</div>
-        <h1 className="mb-2 font-display text-4xl">{view.title}</h1>
+        <h1 className="mb-2 font-display text-2xl md:text-3xl">{view.title}</h1>
         <p className="mb-4 text-slate-600 dark:text-slate-400">{view.text}</p>
         {orderId && (
           <p className="mb-8 text-sm text-muted-foreground">

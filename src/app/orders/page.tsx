@@ -27,7 +27,7 @@ const LS = LS_KEYS;
 function statusClasses(status: Order["status"]) {
   switch (String(status).toLowerCase()) {
     case "pending":
-      return "border-[#1a1815] bg-sticker text-[#1a1815]";
+      return "bg-amber-100 text-amber-900";
     case "paid":
       return "bg-green-600 text-white";
     case "processing":
@@ -93,7 +93,7 @@ export default function OrdersPage() {
     return (
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 font-display text-4xl">Your orders</h1>
+          <h1 className="mb-4 font-display text-2xl md:text-3xl">Your orders</h1>
           <ShowcaseNotice className="mb-6 text-left" />
           <Button onClick={() => router.push("/")}>Continue shopping</Button>
         </div>
@@ -105,7 +105,7 @@ export default function OrdersPage() {
     return (
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
-          <h1 className="mb-4 font-display text-4xl">Could not load your orders</h1>
+          <h1 className="mb-4 font-display text-2xl md:text-3xl">Could not load your orders</h1>
           <p role="alert" className="mb-6 text-gray-600 dark:text-gray-400">
             Please check your connection and try again.
           </p>
@@ -120,7 +120,7 @@ export default function OrdersPage() {
       <div className="min-h-[60vh] bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="mx-auto max-w-md px-4 py-16 text-center">
           <Package className="mx-auto mb-4 h-12 w-12 opacity-50" />
-          <h1 className="mb-4 font-display text-4xl">No orders yet</h1>
+          <h1 className="mb-4 font-display text-2xl md:text-3xl">No orders yet</h1>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             {user
               ? "You haven't placed any orders yet."
@@ -141,10 +141,10 @@ export default function OrdersPage() {
           className="mb-6 gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Store
+          Back to store
         </Button>
 
-        <h1 className="mb-2 font-display text-5xl">Your orders</h1>
+        <h1 className="mb-2 font-display text-3xl md:text-4xl">Your orders</h1>
         <p className="mb-8 text-sm text-muted-foreground">
           {user
             ? `Signed in as ${user.email}`

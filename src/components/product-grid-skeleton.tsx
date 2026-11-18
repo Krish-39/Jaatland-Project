@@ -30,7 +30,7 @@ export function ProductDetailSkeleton() {
     <div
       role="status"
       aria-live="polite"
-      className="mx-auto max-w-7xl px-4 py-8"
+      className="mx-auto max-w-7xl px-4 lg:px-8 py-8"
     >
       <span className="sr-only">Loading product…</span>
       <div aria-hidden className="animate-pulse">

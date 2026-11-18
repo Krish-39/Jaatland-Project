@@ -7,7 +7,7 @@ export function LegalBar() {
   return (
     <nav
       aria-label="Legal"
-      className="border-t border-background/25 bg-ink px-4 py-4 text-xs text-background/80"
+      className="border-t bg-muted/50 px-4 py-4 text-xs text-muted-foreground"
     >
       <ul className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-2">
         {LEGAL_LINKS.map((link) => (

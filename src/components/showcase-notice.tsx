@@ -8,7 +8,7 @@ export function ShowcaseNotice({ className }: { className?: string }) {
     <p
       role="status"
       className={cn(
-        "flex items-start gap-2 rounded-2xl border-2 border-[#1a1815] bg-sticker text-[#1a1815] p-3 text-sm",
+        "flex items-start gap-2 rounded-md border bg-muted text-foreground p-3 text-sm",
         className
       )}
     >

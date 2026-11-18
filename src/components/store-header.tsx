@@ -184,38 +184,33 @@ export function StoreHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b-2 border-ink bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4">
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 lg:px-8">
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={goHome}
               aria-label="Jaatland home"
-              className="group flex items-center gap-2 rounded-full py-1 pr-2"
+              className="flex items-center gap-2 rounded-md py-1 pr-2"
             >
-              <span className="grid size-9 place-items-center rounded-full border-2 border-ink bg-brand text-[#1a1815] transition-transform duration-300 group-hover:-rotate-12">
-                <Shirt className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <span className="font-display whitespace-nowrap text-[1.7rem] leading-none max-[359px]:sr-only">
+              <Shirt className="h-5 w-5" aria-hidden="true" />
+              <span className="whitespace-nowrap text-[1.05rem] font-semibold uppercase tracking-[0.22em] max-[359px]:sr-only">
                 Jaatland
               </span>
             </button>
-            <span className="sticker hidden shrink-0 2xl:inline-flex">
-              Clothing Co.
-            </span>
           </div>
 
-          <nav className="hidden items-center gap-1 xl:flex" aria-label="Categories">
+          <nav className="hidden items-center xl:flex" aria-label="Categories">
             {CATEGORIES.map((category) => (
               <button
                 key={category}
                 type="button"
                 onClick={() => selectCategory(category)}
                 aria-pressed={filters.category === category}
-                className={`rounded-full border-2 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
+                className={`relative px-3 py-2 text-sm transition-colors after:absolute after:inset-x-3 after:-bottom-px after:h-px after:bg-foreground after:transition-transform ${
                   filters.category === category
-                    ? "border-ink bg-ink text-background"
-                    : "border-transparent text-foreground hover:border-ink"
+                    ? "font-medium text-foreground after:scale-x-100"
+                    : "text-muted-foreground after:scale-x-0 hover:text-foreground hover:after:scale-x-100"
                 }`}
               >
                 {category}
@@ -362,22 +357,20 @@ export function StoreHeader() {
               <SheetTrigger asChild>
                 <Button
                   size="icon"
-                  variant="outline"
+                  variant="ghost"
                   aria-label={`Wishlist, ${wishlist.length} ${
                     wishlist.length === 1 ? "item" : "items"
                   }`}
                   className="relative"
                 >
-                  <Heart
-                    className={`h-5 w-5 ${wishlist.length ? "fill-current" : ""}`}
-                  />
+                  <Heart className="h-5 w-5" />
                   {wishlist.length > 0 && (
-                    <Badge
-                      variant="secondary"
-                      className="absolute -right-2 -top-2 h-5 min-w-5 justify-center px-1 text-xs"
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-1.5 -top-1.5 grid h-[1.125rem] min-w-[1.125rem] place-items-center rounded-full bg-foreground px-1 text-[0.625rem] font-semibold text-background"
                     >
                       {wishlist.length}
-                    </Badge>
+                    </span>
                   )}
                 </Button>
               </SheetTrigger>
@@ -442,7 +435,7 @@ export function StoreHeader() {
               <SheetTrigger asChild>
                 <Button
                   size="icon"
-                  variant="outline"
+                  variant="ghost"
                   aria-label={`Cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}`}
                   className="relative"
                 >
@@ -450,7 +443,7 @@ export function StoreHeader() {
                   {cartCount > 0 && (
                     <span
                       aria-hidden="true"
-                      className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full border-2 border-ink bg-brand px-1 text-[0.65rem] font-bold text-[#1a1815]"
+                      className="absolute -right-1.5 -top-1.5 grid h-[1.125rem] min-w-[1.125rem] place-items-center rounded-full bg-foreground px-1 text-[0.625rem] font-semibold text-background"
                     >
                       {cartCount}
                     </span>

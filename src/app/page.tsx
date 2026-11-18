@@ -5,7 +5,7 @@ import { X as XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CategoryTiles } from "@/components/category-tiles";
 import { Hero } from "@/components/hero";
-import { Marquee } from "@/components/marquee";
+import { ServiceBar } from "@/components/service-bar";
 import { ProductGrid } from "@/components/product-card";
 import { useStore } from "@/components/store-provider";
 import { useFilters } from "@/components/filters-provider";
@@ -35,14 +35,12 @@ function SectionHeading({
   count: number;
 }) {
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-3 border-b-2 border-ink pb-4">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h2 className="font-display text-4xl md:text-5xl">{title}</h2>
-        <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-          {subtitle}
-        </p>
+        <h2 className="font-display text-2xl md:text-3xl">{title}</h2>
+        <p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>
       </div>
-      <span className="sticker">
+      <span className="text-sm text-muted-foreground">
         {count} {count === 1 ? "item" : "items"}
       </span>
     </div>
@@ -111,23 +109,23 @@ export default function Jaatland() {
       {!filters.hasActiveFilters && (
         <>
           <Hero config={homepageConfig} />
-          <Marquee />
+          <ServiceBar />
         </>
       )}
 
       <main
         id="products"
-        className="mx-auto max-w-7xl scroll-mt-20 px-4 pb-24 pt-12"
+        className="mx-auto max-w-7xl scroll-mt-20 px-4 pb-24 pt-14 lg:px-8"
       >
         {filters.hasActiveFilters ? (
           <>
             <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h2 className="font-display text-4xl md:text-5xl">
+                <h2 className="font-display text-2xl md:text-3xl">
                   {resultTitle}
                 </h2>
                 <p
-                  className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-400"
+                  className="mt-1.5 text-sm text-muted-foreground"
                   aria-live="polite"
                 >
                   {filters.filtered.length}{" "}
@@ -155,7 +153,7 @@ export default function Jaatland() {
             />
           </>
         ) : (
-          <div className="space-y-20">
+          <div className="space-y-16 md:space-y-20">
             <CategoryTiles />
 
             <section id="featured" className="scroll-mt-24">
